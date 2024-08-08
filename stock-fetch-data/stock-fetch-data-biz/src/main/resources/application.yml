@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: stock-fetch-data
+  profiles:
+    active: dev
+#  cloud:
+#    nacos:
+#      config:
+#        enabled: false
+#        refresh-enabled: false
+#      discovery:
+#        enabled: false
+#        instance-enabled: false
+
+nacos:
+  logging:
+    default:
+      config:
+        enabled: false
+
+server:
+  port: 33001
+  servlet:
+    context-path: /

@@ -1,0 +1,30 @@
+# 基础镜像
+FROM eclipse-temurin:17.0.9_9-jdk-alpine
+
+# linux基础包
+RUN echo "http://mirrors.aliyun.com/alpine/v3.19/main" > /etc/apk/repositories \
+    && echo "http://mirrors.aliyun.com/alpine/v3.19/community" >> /etc/apk/repositories \
+    && apk update upgrade \
+    && apk add --update openssh-client \
+    && apk add --update sshpass \
+    && apk add --no-cache procps unzip curl bash tzdata \
+    && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo "Asia/Shanghai" > /etc/timezone
+
+RUN apk update \
+    && apk upgrade \
+    && apk add --no-cache bash \
+    && apk add ttf-dejavu \
+    bash-doc \
+    bash-completion \
+    && rm -rf /var/cache/apk/* \
+    && /bin/bash
+
+# 创建目录
+RUN mkdir -p /app
+# 指定路径
+WORKDIR /app
+# 复制jar文件到路径
+COPY cemp-bms-biz.jar /app/cemp-bms-biz.jar
+# 启动网关服务
+ENTRYPOINT ["java","-jar","-Xms256m","-Xmx512m","cemp-bms-biz.jar"]

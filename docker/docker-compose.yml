@@ -1,0 +1,194 @@
+version: "3.5"
+services:
+  cemp-gateway:
+    container_name: cemp-gateway
+    image: cemp-gateway:lastest
+    build:
+      context: ./cemp-gateway
+      dockerfile: dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - SPRING_CLOUD_NACOS_DISCOVERY_IP=${HOST_IP}
+  cemp-oauth:
+    container_name: cemp-oauth
+    image: cemp-oauth:lastest
+    build:
+      context: ./cemp-oauth
+      dockerfile: dockerfile
+    ports:
+      - "30001:30001"
+    environment:
+      - SPRING_CLOUD_NACOS_DISCOVERY_IP=${HOST_IP}
+  cemp-bms:
+    container_name: cemp-bms
+    image: cemp-bms:lastest
+    build:
+      context: ./cemp-bms
+      dockerfile: dockerfile
+    ports:
+      - "30002:30002"
+    environment:
+      - SPRING_CLOUD_NACOS_DISCOVERY_IP=${HOST_IP}
+  cemp-file:
+    container_name: cemp-file
+    image: cemp-file:lastest
+    build:
+      context: ./cemp-file
+      dockerfile: dockerfile
+    ports:
+      - "30003:30003"
+    environment:
+      - SPRING_CLOUD_NACOS_DISCOVERY_IP=${HOST_IP}
+  cemp-lgc:
+    container_name: cemp-lgc
+    image: cemp-lgc:lastest
+    build:
+      context: ./cemp-lgc
+      dockerfile: dockerfile
+    ports:
+      - "30004:30004"
+    environment:
+      - SPRING_CLOUD_NACOS_DISCOVERY_IP=${HOST_IP}
+  cemp-monitor:
+    container_name: cemp-monitor
+    image: cemp-monitor:lastest
+    build:
+      context: ./cemp-monitor
+      dockerfile: dockerfile
+    ports:
+      - "30010:30010"
+    environment:
+      - SPRING_CLOUD_NACOS_DISCOVERY_IP=${HOST_IP}
+  cemp-data:
+    container_name: cemp-data
+    image: cemp-data:lastest
+    build:
+      context: ./cemp-data
+      dockerfile: dockerfile
+    ports:
+      - "30020:30020"
+    environment:
+      - SPRING_CLOUD_NACOS_DISCOVERY_IP=${HOST_IP}
+  cemp-energy:
+    container_name: cemp-energy
+    image: cemp-energy:lastest
+    build:
+      context: ./cemp-energy
+      dockerfile: dockerfile
+    ports:
+      - "30030:30030"
+    environment:
+      - SPRING_CLOUD_NACOS_DISCOVERY_IP=${HOST_IP}
+  cemp-job:
+    container_name: cemp-job
+    image: cemp-job:lastest
+    build:
+      context: ./cemp-job
+      dockerfile: dockerfile
+    ports:
+      - "30040:30040"
+    environment:
+      - SPRING_CLOUD_NACOS_DISCOVERY_IP=${HOST_IP}
+  ## gateway-锦江
+  cemp-gw-jinjiang:
+    container_name: cemp-gw-jinjiang
+    image: cemp-gw-jinjiang:lastest
+    build:
+      context: ./cemp-gw-jinjiang
+      dockerfile: dockerfile
+    ports:
+      - "20000:20000"
+    environment:
+      - SPRING_CLOUD_NACOS_DISCOVERY_IP=${HOST_IP}
+  cemp-gw-lgc:
+    container_name: cemp-gw-lgc
+    image: cemp-gw-lgc:lastest
+    build:
+      context: ./cemp-gw-lgc
+      dockerfile: dockerfile
+    ports:
+      - "20001:20001"
+    environment:
+      - SPRING_CLOUD_NACOS_DISCOVERY_IP=${HOST_IP}
+  cemp-gateway-lgc:
+    container_name: cemp-gateway-lgc
+    image: cemp-gw:lastest
+    build:
+      context: ./cemp-gw
+      dockerfile: ./lgc/dockerfile
+    ports:
+      - "20002:20002"
+    environment:
+      - SPRING_CLOUD_NACOS_DISCOVERY_IP=${HOST_IP}
+  cemp-gateway-jingjiang:
+    container_name: cemp-gateway-jingjiang
+    image: cemp-gw:lastest
+    build:
+      context: ./cemp-gw
+      dockerfile: ./jingjiang/dockerfile
+    ports:
+      - "20003:20003"
+    environment:
+      - SPRING_CLOUD_NACOS_DISCOVERY_IP=${HOST_IP}
+  cemp-cus-jjgj:
+    container_name: cemp-cus-jjgj
+    image: cemp-cus-jjgj:lastest
+    build:
+      context: ./cemp-cus-jjgj
+      dockerfile: dockerfile
+    ports:
+      - "31001:31001"
+    environment:
+      - SPRING_CLOUD_NACOS_DISCOVERY_IP=${HOST_IP}
+  cemp-cus-sdl:
+    container_name: cemp-cus-sdl
+    image: cemp-cus-sdl:lastest
+    build:
+      context: ./cemp-cus-sdl
+      dockerfile: dockerfile
+    ports:
+      - "31002:31002"
+    environment:
+      - SPRING_CLOUD_NACOS_DISCOVERY_IP=${HOST_IP}
+  cemp-cus-jzd:
+    container_name: cemp-cus-jzd
+    image: cemp-cus-jzd:lastest
+    build:
+      context: ./cemp-cus-jzd
+      dockerfile: dockerfile
+    ports:
+      - "31003:31003"
+    environment:
+      - SPRING_CLOUD_NACOS_DISCOVERY_IP=${HOST_IP}
+  cemp-cus-lh:
+    container_name: cemp-cus-lh
+    image: cemp-cus-lh:lastest
+    build:
+      context: ./cemp-cus-lh
+      dockerfile: dockerfile
+    ports:
+      - "31004:31004"
+    environment:
+      - SPRING_CLOUD_NACOS_DISCOVERY_IP=${HOST_IP}
+  cemp-messaging:
+    container_name: cemp-messaging
+    image: cemp-messaging:lastest
+    build:
+      context: ./cemp-messaging
+      dockerfile: dockerfile
+    ports:
+      - "25000:25000"
+    environment:
+      - SPRING_CLOUD_NACOS_DISCOVERY_IP=${HOST_IP}
+  cemp-engine:
+    container_name: cemp-engine
+    image: cemp-engine:lastest
+    build:
+      context: ./cemp-engine
+      dockerfile: dockerfile
+    ports:
+      - "30060:30060"
+    environment:
+      - SPRING_CLOUD_NACOS_DISCOVERY_IP=${HOST_IP}
+

@@ -1,0 +1,17 @@
+spring:
+  cloud:
+    nacos:
+      username: nacos
+      password: nacos
+      server-addr: 39.98.82.109:8848
+      discovery:
+        namespace: 82b2b0bc-38d4-4e3e-a1c5-773c56de8b41
+        group: DEFAULT_GROUP
+      config:
+        server-addr: 39.98.82.109:8848
+        namespace: 82b2b0bc-38d4-4e3e-a1c5-773c56de8b41
+        group: DEFAULT_GROUP
+        file-extension: yaml
+  config:
+    import:
+      - optional:nacos:${spring.application.name}

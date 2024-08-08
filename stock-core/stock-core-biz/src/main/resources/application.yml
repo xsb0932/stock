@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: stock-core
+  profiles:
+    active: dev
+#  cloud:
+#    nacos:
+#      config:
+#        enabled: false
+#        refresh-enabled: false
+#      discovery:
+#        enabled: false
+#        instance-enabled: false
+
+nacos:
+  logging:
+    default:
+      config:
+        enabled: false
+
+server:
+  port: 33002
+  servlet:
+    context-path: /
+
+emq:
+  broker: tcp://39.98.82.109:1883
+  topic: /wow/lr/hlxz
+  username: admin
+  password: public
+  clientid: publish_client_fq
