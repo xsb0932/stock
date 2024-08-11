@@ -3,15 +3,15 @@ spring:
     name: stock-fetch-data
   profiles:
     active: dev
-#  cloud:
-#    nacos:
-#      config:
-#        enabled: false
-#        refresh-enabled: false
-#      discovery:
-#        enabled: false
-#        instance-enabled: false
-
+  main:
+    allow-circular-references: true # 允许循环依赖，因为项目是三层架构，无法避免这个情况。
+    allow-bean-definition-overriding: true # 允许 Bean 覆盖，例如说 Dubbo 或者 Feign 等会存在重复定义的服务
+  data:
+    redis:
+      host: 39.98.82.109
+      port: 6379
+      database: 0
+      password: landleaf123
 nacos:
   logging:
     default:
