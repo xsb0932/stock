@@ -12,6 +12,16 @@ spring:
       port: 6379
       database: 0
       password: landleaf123
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://39.98.82.109:3306/stock?characterEncoding=utf-8&useSSL=false
+    username: root
+    password: landleaf@123.com
+#开启日志
+mybatis-plus:
+  mapper-locations: classpath*:mapper/*.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 nacos:
   logging:
     default:

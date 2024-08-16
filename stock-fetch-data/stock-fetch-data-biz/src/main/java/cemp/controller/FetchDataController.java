@@ -31,6 +31,11 @@ public class FetchDataController {
         return fetchDataService.getAllStocks();
 
     }
+    @GetMapping("/testdb")
+    public String testdb() {
+        return fetchDataService.testDB();
+
+    }
 
     @GetMapping("/max")
     public String max(@RequestParam("stockCode") String stockCode) {

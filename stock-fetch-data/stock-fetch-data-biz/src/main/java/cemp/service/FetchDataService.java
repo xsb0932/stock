@@ -5,8 +5,12 @@ import cemp.domain.response.ApiAllStockDetails;
 import cemp.domain.response.ApiAllStockResponse;
 import cemp.domain.response.ApiCurrentDetails;
 import cemp.domain.response.ApiCurrentResponse;
+import cemp.entity.BusStaDate;
+import cemp.mapper.BusStaDateMapper;
 import cemp.redis.util.RedisUtils;
 import com.alibaba.cloud.commons.lang.StringUtils;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import lombok.RequiredArgsConstructor;
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.BatchPoints;
 import org.influxdb.dto.Point;
@@ -33,6 +37,7 @@ import static cemp.constant.RedisKey.STOCK_ALL_KEY;
 import static cemp.common.constant.StockCommonConstant.*;
 
 @Service
+@RequiredArgsConstructor
 public class FetchDataService {
 
     @Autowired
@@ -43,6 +48,8 @@ public class FetchDataService {
     RedisUtils redisUtils;
     @Autowired
     InfluxDBUtils influxDBUtils;
+
+    private final BusStaDateMapper busStaDateMapper;
 
     public String max(String stockCode){
         String sql = "select max(price) as price from test_stock";
@@ -78,6 +85,18 @@ public class FetchDataService {
                 redisUtils.hset(STOCK_ALL_KEY,stock.getApi_code(),stock);
             }
         });
+        return "success";
+    }
+
+    public String testDB(){
+        BusStaDate busStaDate = busStaDateMapper.selectById(1L);
+        return "success";
+    }
+
+    public String testDB2(){
+        LambdaQueryWrapper<BusStaDate> lqw = new LambdaQueryWrapper<>();
+        lqw.eq(BusStaDate::getId,1);
+        busStaDateMapper.selectOne(lqw);
         return "success";
     }
 
