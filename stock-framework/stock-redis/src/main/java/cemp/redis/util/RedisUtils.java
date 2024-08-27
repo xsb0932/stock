@@ -274,6 +274,10 @@ public final class RedisUtils {
         return redisTemplate.opsForHash().entries(key);
     }
 
+     public List<Object> hmget(String key,List<Object> hkeys) {
+        return redisTemplate.opsForHash().multiGet(key,hkeys);
+    }
+
     /**
      * HashSet
      *

@@ -17,6 +17,12 @@ spring:
     url: jdbc:mysql://39.98.82.109:3306/stock?characterEncoding=utf-8&useSSL=false
     username: root
     password: landleaf@123.com
+  mail:
+    host: smtp.163.com
+    port: 25
+    username: xsb_terry@163.com
+    password: AUXWXGFFIEGPGRNZ
+    default-encoding: UTF-8
 #开启日志
 mybatis-plus:
   mapper-locations: classpath*:mapper/*.xml
@@ -32,3 +38,8 @@ server:
   port: 33001
   servlet:
     context-path: /
+
+stock:
+  mail:
+    from: xsb_terry@163.com
+    to: 597780384@qq.com

@@ -6,94 +6,18 @@
 
     <resultMap id="BaseResultMap" type="cemp.entity.BusStaDate">
             <id property="id" column="id" jdbcType="INTEGER"/>
-            <result property="beginPrice" column="begin_price" jdbcType="DECIMAL"/>
-            <result property="endPrice" column="end_price" jdbcType="DECIMAL"/>
-            <result property="maxPrice" column="max_price" jdbcType="DECIMAL"/>
-            <result property="minPrice" column="min_price" jdbcType="DECIMAL"/>
+            <result property="begin_price" column="begin_price" jdbcType="DECIMAL"/>
+            <result property="end_price" column="end_price" jdbcType="DECIMAL"/>
+            <result property="max_price" column="max_price" jdbcType="DECIMAL"/>
+            <result property="min_price" column="min_price" jdbcType="DECIMAL"/>
             <result property="trunover" column="trunover" jdbcType="DECIMAL"/>
-            <result property="busDate" column="bus_date" jdbcType="DATE"/>
+            <result property="bus_date" column="bus_date" jdbcType="DATE"/>
+            <result property="stock_code" column="stock_code" jdbcType="VARCHAR"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,begin_price,end_price,
         max_price,min_price,trunover,
-        bus_date
+        bus_date,stock_code
     </sql>
-
-    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
-        select
-        <include refid="Base_Column_List" />
-        from bus_sta_date
-        where  id = #{id,jdbcType=INTEGER} 
-    </select>
-
-    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
-        delete from bus_sta_date
-        where  id = #{id,jdbcType=INTEGER} 
-    </delete>
-    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cemp.entity.BusStaDate" useGeneratedKeys="true">
-        insert into bus_sta_date
-        ( id,begin_price,end_price
-        ,max_price,min_price,trunover
-        ,bus_date)
-        values (#{id,jdbcType=INTEGER},#{beginPrice,jdbcType=DECIMAL},#{endPrice,jdbcType=DECIMAL}
-        ,#{maxPrice,jdbcType=DECIMAL},#{minPrice,jdbcType=DECIMAL},#{trunover,jdbcType=DECIMAL}
-        ,#{busDate,jdbcType=DATE})
-    </insert>
-    <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="cemp.entity.BusStaDate" useGeneratedKeys="true">
-        insert into bus_sta_date
-        <trim prefix="(" suffix=")" suffixOverrides=",">
-                <if test="id != null">id,</if>
-                <if test="beginPrice != null">begin_price,</if>
-                <if test="endPrice != null">end_price,</if>
-                <if test="maxPrice != null">max_price,</if>
-                <if test="minPrice != null">min_price,</if>
-                <if test="trunover != null">trunover,</if>
-                <if test="busDate != null">bus_date,</if>
-        </trim>
-        <trim prefix="values (" suffix=")" suffixOverrides=",">
-                <if test="id != null">#{id,jdbcType=INTEGER},</if>
-                <if test="beginPrice != null">#{beginPrice,jdbcType=DECIMAL},</if>
-                <if test="endPrice != null">#{endPrice,jdbcType=DECIMAL},</if>
-                <if test="maxPrice != null">#{maxPrice,jdbcType=DECIMAL},</if>
-                <if test="minPrice != null">#{minPrice,jdbcType=DECIMAL},</if>
-                <if test="trunover != null">#{trunover,jdbcType=DECIMAL},</if>
-                <if test="busDate != null">#{busDate,jdbcType=DATE},</if>
-        </trim>
-    </insert>
-    <update id="updateByPrimaryKeySelective" parameterType="cemp.entity.BusStaDate">
-        update bus_sta_date
-        <set>
-                <if test="beginPrice != null">
-                    begin_price = #{beginPrice,jdbcType=DECIMAL},
-                </if>
-                <if test="endPrice != null">
-                    end_price = #{endPrice,jdbcType=DECIMAL},
-                </if>
-                <if test="maxPrice != null">
-                    max_price = #{maxPrice,jdbcType=DECIMAL},
-                </if>
-                <if test="minPrice != null">
-                    min_price = #{minPrice,jdbcType=DECIMAL},
-                </if>
-                <if test="trunover != null">
-                    trunover = #{trunover,jdbcType=DECIMAL},
-                </if>
-                <if test="busDate != null">
-                    bus_date = #{busDate,jdbcType=DATE},
-                </if>
-        </set>
-        where   id = #{id,jdbcType=INTEGER} 
-    </update>
-    <update id="updateByPrimaryKey" parameterType="cemp.entity.BusStaDate">
-        update bus_sta_date
-        set 
-            begin_price =  #{beginPrice,jdbcType=DECIMAL},
-            end_price =  #{endPrice,jdbcType=DECIMAL},
-            max_price =  #{maxPrice,jdbcType=DECIMAL},
-            min_price =  #{minPrice,jdbcType=DECIMAL},
-            trunover =  #{trunover,jdbcType=DECIMAL},
-            bus_date =  #{busDate,jdbcType=DATE}
-        where   id = #{id,jdbcType=INTEGER} 
-    </update>
 </mapper>

@@ -1,5 +1,6 @@
 package cemp.service;
 
+import cemp.conf.StockMailSender;
 import cemp.config.InfluxDBUtils;
 import cemp.domain.response.ApiAllStockDetails;
 import cemp.domain.response.ApiAllStockResponse;
@@ -8,7 +9,14 @@ import cemp.domain.response.ApiCurrentResponse;
 import cemp.entity.BusStaDate;
 import cemp.mapper.BusStaDateMapper;
 import cemp.redis.util.RedisUtils;
+import cemp.util.DateUtil;
+import cemp.util.DateUtils;
+import cemp.util.StockUtils;
+import cn.hutool.core.map.MapUtil;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.alibaba.cloud.commons.lang.StringUtils;
+import com.alibaba.nacos.shaded.com.google.common.collect.Lists;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.influxdb.InfluxDB;
@@ -16,29 +24,36 @@ import org.influxdb.dto.BatchPoints;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.QueryResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import static cemp.constant.RedisKey.STOCK_CURRENT_KEY;
 import static cemp.constant.RedisKey.STOCK_ALL_KEY;
+import static cemp.constant.RedisKey.*;
 import static cemp.common.constant.StockCommonConstant.*;
 
 @Service
 @RequiredArgsConstructor
 public class FetchDataService {
+
+    @Value("${stock.mail.from}")
+    private String stockFrom;
+    @Value("${stock.mail.to}")
+    private String stockTo;
 
     @Autowired
     RestTemplate restTemplate;
@@ -48,6 +63,8 @@ public class FetchDataService {
     RedisUtils redisUtils;
     @Autowired
     InfluxDBUtils influxDBUtils;
+    @Autowired
+    StockMailSender stockMailSender;
 
     private final BusStaDateMapper busStaDateMapper;
 
@@ -75,6 +92,10 @@ public class FetchDataService {
         return null;
     }
 
+    /**
+     * 维护所有股票代码
+     * @return
+     */
     public String getAllStocks(){
         String url = "https://stockapi.com.cn/v1/base/all?token=77a665b92b6249728cb29a53e9cf0918560093a778c3da0b";
         ApiAllStockResponse response =  restTemplate.getForObject(url,ApiAllStockResponse.class);
@@ -100,6 +121,82 @@ public class FetchDataService {
         return "success";
     }
 
+    public void makeKPI(String date){
+        //查询所有stock
+        String[] stockCodes = new String[]{"002648","600761","600019"};
+        List<Object> result =  redisUtils.hmget(STOCK_ALL_KEY,Arrays.asList(stockCodes));
+
+        //遍历stock 计算kpi
+//        result.forEach(new Consumer<Object>() {
+//            @Override
+//            public void accept(Object o) {
+//                JSONObject obj = (JSONObject)o;
+//                obj.get
+//            }
+//        });
+        for (String stockCode : stockCodes) {
+            String measument = String.format("%s_%s","stock",stockCode);
+            //刨去集合竞价的数据 (09:15:00 - 09:30:00)
+            String sql = "select * from " + measument + " where time >= '" + DateUtils.getUTC(date.concat(" 09:30:00"))+"'";
+            QueryResult list = influxDBUtils.query(sql);
+            List<JSONObject> seriesData = Lists.newArrayList();
+            if(list.getResults() != null &&list.getResults().size()>0){
+                QueryResult.Series s = list.getResults().get(0).getSeries().get(0);
+                //列名
+                List<String> fields = s.getColumns();
+                Map<String, String> tags = s.getTags();
+
+
+                if (!CollectionUtils.isEmpty(s.getValues())) {
+                    //每一行是一个List<Object>
+                    for (List<Object> value : s.getValues()) {
+                        JSONObject temp = JSONUtil.createObj();
+                        for (int i = 0; i < fields.size(); i++) {
+                            temp.set(fields.get(i), value.get(i));
+                        }
+                        // modify by hebin， group by的时候，把tag直接塞到result中返回
+                        if (!MapUtil.isEmpty(tags)) {
+                            tags.forEach((k, v) -> {
+                                temp.set(k, v);
+                            });
+                        }
+                        seriesData.add(temp);
+                    }
+                }
+            }
+            //写入kpi
+            Double max = seriesData.stream().max((o1, o2) -> o1.getDouble("price").compareTo(o2.getDouble("price"))).get().getDouble("price");
+            Double min = seriesData.stream().min((o1, o2) -> o1.getDouble("price").compareTo(o2.getDouble("price"))).get().getDouble("price");
+            Double begin = seriesData.get(0).getDouble("price");
+            Double end = seriesData.get(seriesData.size()-1).getDouble("price");
+            BigDecimal trunover = new BigDecimal(0);
+            trunover = seriesData.stream().map(entries -> BigDecimal.valueOf(entries.getDouble("price")).multiply(BigDecimal.valueOf(entries.getDouble("shoushu")))).filter(Objects::nonNull).reduce(BigDecimal.ZERO, BigDecimal::add);
+            BusStaDate detail = new BusStaDate(
+                    null,
+                    BigDecimal.valueOf(begin),
+                    BigDecimal.valueOf(end),
+                    BigDecimal.valueOf(max),
+                    BigDecimal.valueOf(min),
+                    trunover,
+                    DateUtil.Date2Str(date),
+                    stockCode
+            );
+            busStaDateMapper.insert(detail);
+        }
+        System.out.println("write kpi success");
+    }
+
+    public static void main(String[] args) {
+        System.out.println(DateUtil.Date2Str("2024-08-21"));
+    }
+
+
+
+    /**
+     * 保存历史数据
+     * @param date
+     * @return
+     */
     public String history5(String date){
 //        String url = "https://stockapi.com.cn/v1/base2/secondHistory?token=77a665b92b6249728cb29a53e9cf0918560093a778c3da0b&date=2024-08-08&code=002648"
         DateTimeFormatter LC_DT_FMT_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -157,6 +254,84 @@ public class FetchDataService {
 
 
         return "success";
+    }
+
+    /**
+     * 统计当天实时数据
+     */
+    public void staCurrent(){
+        LocalDate date = LocalDate.now();
+        String[] stockCodes = new String[]{"002648","600761","600019"};
+        //String[] stockCodes = new String[]{"002648"};
+        for (int i = 0; i < stockCodes.length; i++) {
+            String stockCode = stockCodes[i];
+            String url = String.format("%s%s?token=%s&code=%s&all=1",STOCK_HOST,STOCK_URL_CURRENT,STOCK_TOKEN,stockCode);
+            ApiCurrentResponse response =  restTemplate.getForObject(url,ApiCurrentResponse.class);
+
+            //获取时间游标
+            LocalDateTime timeCursor = getCursor(stockCode);
+            // 判断是否已收盘
+            if(this.isClose(timeCursor)){
+                System.out.println("已收盘");
+            }else{
+                //过滤有效数据
+                List<ApiCurrentDetails> datas = response.getData().stream().filter(detail -> {
+                    String fullTime = DateUtil.getDatePrefix().concat(detail.getTime());
+                    LocalDateTime dt = LocalDateTime.parse(fullTime,DateUtil.dtf_ds);
+                    return dt.compareTo(timeCursor) > 0;
+                }).collect(Collectors.toList());
+                String newDateCursor = StockUtils.stockBatchInsert(influxDB,"stock",stockCode,timeCursor,datas);
+                //维护新的游标
+                if(StringUtils.isNotBlank(newDateCursor)){
+                    redisUtils.set(STOCK_CURRENT_KEY.concat(stockCode),newDateCursor);
+                }
+                //异动通知
+                Integer exNumber = 0;
+                //维护在缓存
+                if("002648".equals(stockCode)){
+                    exNumber = 5000;
+                }else if("600019".equals(stockCode)){
+                    exNumber = 10000;
+                }else if("600761".equals(stockCode)){
+                    exNumber = 5000;
+                }
+
+                Integer finalExNumber = exNumber;
+                List<ApiCurrentDetails> exceptinDatas = datas.stream().filter(detail -> new BigDecimal(detail.getShoushu()).compareTo(BigDecimal.valueOf(finalExNumber)) > 0).collect(Collectors.toList());
+                if (exceptinDatas != null && exceptinDatas.size() > 0){
+                    stockMailSender.send(stockFrom,stockTo,String.format("stockCode:%s有异动,成交量手:%s",exceptinDatas.get(0).getShoushu()));
+                }
+            }
+
+
+        }
+
+    }
+
+    /**
+     * 判断时候当天已收盘
+     * @param dt
+     * @return
+     */
+    private boolean isClose(LocalDateTime dt){
+        // todo 判断收盘的标志维护再本地guava
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime closeTime = LocalDateTime.of(now.getYear(),now.getMonthValue(),now.getDayOfMonth(),15,0,0);
+        if(dt.compareTo(closeTime) == 0){
+            return true;
+        }
+        return false;
+    }
+
+    private LocalDateTime getCursor(String stockCode){
+        Object obj = redisUtils.get(STOCK_CURRENT_KEY.concat(stockCode));
+        if(obj != null){
+            String timeCursor = obj.toString();
+            return LocalDateTime.parse(timeCursor,DateUtil.dtf_ds);
+        }else{
+            LocalDate now = LocalDate.now();
+            return LocalDateTime.of(now.getYear(),now.getMonthValue(),now.getDayOfMonth(),00,00,00);
+        }
     }
 
 
