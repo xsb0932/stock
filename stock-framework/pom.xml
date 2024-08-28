@@ -16,6 +16,8 @@
         <module>stock-common</module>
         <module>stock-redis</module>
         <module>stock-web</module>
+        <module>stock-influx</module>
+        <module>stock-mail</module>
     </modules>
 
     <properties>

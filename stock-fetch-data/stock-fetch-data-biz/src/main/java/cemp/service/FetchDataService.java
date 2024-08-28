@@ -65,6 +65,8 @@ public class FetchDataService {
     InfluxDBUtils influxDBUtils;
     @Autowired
     StockMailSender stockMailSender;
+    @Autowired
+    StockSendMailService stockSendMailService;
 
     private final BusStaDateMapper busStaDateMapper;
 
@@ -299,7 +301,8 @@ public class FetchDataService {
                 Integer finalExNumber = exNumber;
                 List<ApiCurrentDetails> exceptinDatas = datas.stream().filter(detail -> new BigDecimal(detail.getShoushu()).compareTo(BigDecimal.valueOf(finalExNumber)) > 0).collect(Collectors.toList());
                 if (exceptinDatas != null && exceptinDatas.size() > 0){
-                    stockMailSender.send(stockFrom,stockTo,String.format("stockCode:%s有异动,成交量手:%s",exceptinDatas.get(0).getShoushu()));
+                    //stockMailSender.send(stockFrom,stockTo,String.format("stockCode:%s有异动,成交量手:%s",stockCode,exceptinDatas.get(0).getShoushu()));
+                    stockSendMailService.sendMail(stockFrom,stockTo,String.format("stockCode:%s有异动,成交量手:%s",stockCode,exceptinDatas.get(0).getShoushu()));
                 }
             }
 

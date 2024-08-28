@@ -2,6 +2,7 @@ package cemp.util;
 
 import cemp.domain.response.ApiCurrentDetails;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.BatchPoints;
 import org.influxdb.dto.Point;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 
 import static cemp.common.constant.StockCommonConstant.STOCK_TABLE_PREFIX;
 
+@Slf4j
 public class StockUtils {
 
     public static boolean isOpenYestoday(){
@@ -55,7 +57,13 @@ public class StockUtils {
                 @Override
                 public void accept(ApiCurrentDetails detail) {
                     //可指定时间戳
-                    Date dt = DateUtil.fmt_ds.parse(DateUtil.getDatePrefix().concat(detail.getTime()));
+                    //todo 生成的时间是否有问题
+                    String dp = DateUtil.getDatePrefix().concat(detail.getTime());
+                    log.info("time str:"+dp);
+                    Date dt = DateUtil.fmt_ds.parse(dp);
+                    log.info("time1:" + dt);
+                    log.info("time2:"+ dt.getTime());
+                    //Date dt = DateUtil.fmt_ds.parse(DateUtil.getDatePrefix().concat(detail.getTime()));
                     /** 批量插入 **/
                     Point.Builder builder = Point.measurement(STOCK_TABLE_PREFIX.concat(stockCode.toString()));
                     builder.time(dt.getTime(), TimeUnit.MILLISECONDS);

@@ -1,45 +1,10 @@
-spring:
-  application:
-    name: stock-fetch-data
-  profiles:
-    active: dev
-  main:
-    allow-circular-references: true # 允许循环依赖，因为项目是三层架构，无法避免这个情况。
-    allow-bean-definition-overriding: true # 允许 Bean 覆盖，例如说 Dubbo 或者 Feign 等会存在重复定义的服务
-  data:
-    redis:
-      host: 39.98.82.109
-      port: 6379
-      database: 0
-      password: landleaf123
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://39.98.82.109:3306/stock?characterEncoding=utf-8&useSSL=false
-    username: root
-    password: landleaf@123.com
-  mail:
-    host: smtp.163.com
-    port: 25
-    username: xsb_terry@163.com
-    password: AUXWXGFFIEGPGRNZ
-    default-encoding: UTF-8
 #开启日志
 mybatis-plus:
   mapper-locations: classpath*:mapper/*.xml
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-nacos:
-  logging:
-    default:
-      config:
-        enabled: false
 
 server:
   port: 33001
   servlet:
     context-path: /
-
-stock:
-  mail:
-    from: xsb_terry@163.com
-    to: 597780384@qq.com
