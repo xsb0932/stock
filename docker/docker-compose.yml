@@ -1,30 +1,10 @@
 version: "3.5"
 services:
-  cemp-gateway:
-    container_name: cemp-gateway
-    image: cemp-gateway:lastest
-    build:
-      context: ./cemp-gateway
-      dockerfile: dockerfile
-    ports:
-      - "3000:3000"
-    environment:
-      - SPRING_CLOUD_NACOS_DISCOVERY_IP=${HOST_IP}
-  cemp-oauth:
-    container_name: cemp-oauth
-    image: cemp-oauth:lastest
-    build:
-      context: ./cemp-oauth
-      dockerfile: dockerfile
-    ports:
-      - "30001:30001"
-    environment:
-      - SPRING_CLOUD_NACOS_DISCOVERY_IP=${HOST_IP}
   cemp-bms:
-    container_name: cemp-bms
-    image: cemp-bms:lastest
+    container_name: stock-fetch-data
+    image: stock-fetch-data:lastest
     build:
-      context: ./cemp-bms
+      context: ./stock-fetch-data
       dockerfile: dockerfile
     ports:
       - "30002:30002"
