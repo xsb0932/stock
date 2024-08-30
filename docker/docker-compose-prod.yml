@@ -9,6 +9,10 @@ services:
       dockerfile: dockerfile
     ports:
       - "33001:33001"
+    volumes:
+      - type: bind
+        source: /home/jenkins/workspace
+        target: /app/logs
     environment:
       - SPRING_PROFILES_ACTIVE=prod
 
