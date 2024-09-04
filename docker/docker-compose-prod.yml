@@ -11,7 +11,7 @@ services:
       - "33001:33001"
     volumes:
       - type: bind
-        source: /home/jenkins/workspace/logs
+        source: /app/docker/elk/filebeat/logs
         target: /app/logs
     environment:
       - SPRING_PROFILES_ACTIVE=prod

@@ -7,11 +7,13 @@ import cemp.domain.response.ApiAllStockResponse;
 import cemp.domain.response.ApiCurrentDetails;
 import cemp.domain.response.ApiCurrentResponse;
 import cemp.entity.BusStaDate;
+import cemp.entity.StockDailyStatus;
 import cemp.mapper.BusStaDateMapper;
 import cemp.redis.util.RedisUtils;
 import cemp.util.DateUtil;
 import cemp.util.DateUtils;
 import cemp.util.StockUtils;
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -19,12 +21,14 @@ import com.alibaba.cloud.commons.lang.StringUtils;
 import com.alibaba.nacos.shaded.com.google.common.collect.Lists;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.BatchPoints;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.QueryResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
@@ -38,16 +42,15 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import static cemp.constant.RedisKey.STOCK_CURRENT_KEY;
 import static cemp.constant.RedisKey.STOCK_ALL_KEY;
-import static cemp.constant.RedisKey.*;
 import static cemp.common.constant.StockCommonConstant.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FetchDataService {
 
     @Value("${stock.mail.from}")
@@ -67,6 +70,11 @@ public class FetchDataService {
     StockMailSender stockMailSender;
     @Autowired
     StockSendMailService stockSendMailService;
+    @Autowired
+    StockAllService stockAllService;
+    @Autowired
+    StockDailyStatusService stockDailyStatusService;
+
 
     private final BusStaDateMapper busStaDateMapper;
 
@@ -102,10 +110,29 @@ public class FetchDataService {
         String url = "https://stockapi.com.cn/v1/base/all?token=77a665b92b6249728cb29a53e9cf0918560093a778c3da0b";
         ApiAllStockResponse response =  restTemplate.getForObject(url,ApiAllStockResponse.class);
         List<ApiAllStockDetails> details = response.getData();
+        details = details.stream().map(stock -> {
+            stock.setIssta("0");
+            return stock;
+        }).collect(Collectors.toList());
+        //details.forEach(stock -> redisUtils.hset(STOCK_ALL_KEY,stock.getApi_code(),stock));
+
+        //逐条插入
+//        details.forEach(new Consumer<ApiAllStockDetails>() {
+//            @Override
+//            public void accept(ApiAllStockDetails stock) {
+//                redisUtils.hset(STOCK_ALL_KEY.concat(":").concat(stock.getApicode()),"apicode",stock.getApicode());
+//                redisUtils.hset(STOCK_ALL_KEY.concat(":").concat(stock.getApicode()),"gl",stock.getGl());
+//                redisUtils.hset(STOCK_ALL_KEY.concat(":").concat(stock.getApicode()),"issta",stock.getIssta());
+//                redisUtils.hset(STOCK_ALL_KEY.concat(":").concat(stock.getApicode()),"jys",stock.getJys());
+//                redisUtils.hset(STOCK_ALL_KEY.concat(":").concat(stock.getApicode()),"name",stock.getName());
+//            }
+//        });
+        //批量插入
         details.forEach(new Consumer<ApiAllStockDetails>() {
             @Override
             public void accept(ApiAllStockDetails stock) {
-                redisUtils.hset(STOCK_ALL_KEY,stock.getApi_code(),stock);
+                Map<String,Object> map = BeanUtil.beanToMap(stock);
+                redisUtils.hmset(STOCK_ALL_KEY.concat(":").concat(stock.getApi_code()),map);
             }
         });
         return "success";
@@ -258,6 +285,90 @@ public class FetchDataService {
         return "success";
     }
 
+
+
+    private List<LocalDate> getDateBetween(LocalDate begin, LocalDate end){
+        List<LocalDate> rtnList = new ArrayList<>();
+        while(begin.compareTo(end) < 0){
+            if(StockUtils.isOpen(begin)){
+                rtnList.add(begin);
+            }
+            begin.plusDays(1);
+        }
+        return rtnList;
+    }
+
+    private List<LocalDate> getUnhandleDates(String stockCode, Date lstDate){
+        LocalDate now = LocalDate.now();
+        LocalDate ldLstDate = DateUtil.date2LocalDate(lstDate);
+        // 计算需要统计的历史时间-天
+        List<LocalDate> daysBetween =  getDateBetween(ldLstDate,now);
+
+//        daysBetween.forEach(date -> {
+//            //todo 处理历史数据业务
+//            historyHandle(stockCode,DateUtil.localDate2Str(date));
+//        });
+        return daysBetween;
+    }
+
+    /**
+     * 处理单条历史数据
+     * @param stockCode
+     * @param date
+     */
+    private void historyHandle(String stockCode,String date){
+        //查询
+        String url = String.format("%s%s?token=%s&date=%s&code=%s",STOCK_HOST,STOCK_URL_HISTORY,STOCK_TOKEN,date,stockCode);
+        ApiCurrentResponse response =  restTemplate.getForObject(url,ApiCurrentResponse.class);
+        //解析
+        BatchPoints batchPoints = BatchPoints.database("stock")
+                .consistency(InfluxDB.ConsistencyLevel.ALL)
+                .build();
+        response.getData().forEach(detail -> {
+            try{
+                /** 批量插入 **/
+                Point.Builder builder = Point.measurement(STOCK_TABLE_PREFIX.concat(stockCode.toString()));
+                //可指定时间戳
+                Date dt = DateUtil.fmt_ds.parse(detail.getTime());
+                builder.time(dt.getTime(), TimeUnit.MILLISECONDS);
+                //tag属性只能存储String类型
+                builder.tag("code", stockCode.toString());
+                //设置field
+                builder.addField("price", new BigDecimal(detail.getPrice()));
+                builder.addField("shoushu", Integer.valueOf(detail.getShoushu()));
+                builder.addField("danshu", Integer.valueOf(detail.getDanShu()));
+                batchPoints.point(builder.build());
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+        });
+        //入库
+        influxDB.write(batchPoints);
+    }
+
+    /**
+     * 处理上海 历史数据
+     * @return
+     */
+    public String historySH(){
+        //查询待处理的50条股票
+        List<StockDailyStatus> stocks = stockDailyStatusService.findUnhandle();
+        //遍历
+        for (StockDailyStatus stock : stocks) {
+            //判断当前股票有多少历史数据需要补
+            Date lastDate = stock.getLast_date();
+            List<LocalDate> unhandleDates =  getUnhandleDates(stock.getStock_code(),lastDate);
+            unhandleDates.forEach(new Consumer<LocalDate>() {
+                @Override
+                public void accept(LocalDate date) {
+                    historyHandle(stock.getStock_code(),DateUtil.localDate2Str(date));
+                }
+            });
+        }
+        return "success";
+    }
+
     /**
      * 统计当天实时数据
      */
@@ -303,6 +414,7 @@ public class FetchDataService {
                 if (exceptinDatas != null && exceptinDatas.size() > 0){
                     //stockMailSender.send(stockFrom,stockTo,String.format("stockCode:%s有异动,成交量手:%s",stockCode,exceptinDatas.get(0).getShoushu()));
                     stockSendMailService.sendMail(stockFrom,stockTo,String.format("stockCode:%s有异动,成交量手:%s",stockCode,exceptinDatas.get(0).getShoushu()));
+                    log.info(String.format("stockCode:%s有异动,成交量手:%s",stockCode,exceptinDatas.get(0).getShoushu()));
                 }
             }
 
@@ -405,5 +517,24 @@ public class FetchDataService {
         redisUtils.set(STOCK_CURRENT_KEY.concat(stockCode),newLastChargeTime);
 
         return "success";
+    }
+
+    /**
+     * 1. 维护redis缓存
+     * 2. 维护本地guava缓存 （增加访问速度）
+     * 3.
+     */
+    public void maintainDaily() {
+        //更新数据库status表
+        stockDailyStatusService.updateAllStocks();
+
+    }
+
+    public void maintainMonthly(){
+        //初始化stock_all
+        stockAllService.init();
+        //初始化stock_status
+        stockDailyStatusService.init();
+
     }
 }

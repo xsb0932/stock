@@ -1,15 +1,11 @@
 package cemp;
 
 import cemp.conf.StockMailSender;
-import lombok.RequiredArgsConstructor;
+import cemp.service.FetchDataService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.client.RestTemplate;
-
-import javax.annotation.Resource;
 
 @SpringBootTest
 class CempBmsBizApplicationTests {
@@ -19,12 +15,30 @@ class CempBmsBizApplicationTests {
     @Autowired
     StockMailSender stockMailSender;
 
+    @Autowired
+    FetchDataService fetchDataService;
+
     @Test
     void contextLoads() {
         RestTemplate restTemplate = new RestTemplate();
         String url = "https://stockapi.com.cn/v1/base/second?token=77a665b92b6249728cb29a53e9cf0918560093a778c3da0b&code=002648&all=1";
         String response = restTemplate.getForObject(url,String.class);
         System.out.println(response);
+    }
+
+    @Test
+    void maintainDaily(){
+        fetchDataService.maintainDaily();
+    }
+
+    @Test
+    void historySH(){
+        fetchDataService.historySH();
+    }
+
+    @Test
+    void maintainMonthly(){
+        fetchDataService.maintainMonthly();
     }
 
     @Test

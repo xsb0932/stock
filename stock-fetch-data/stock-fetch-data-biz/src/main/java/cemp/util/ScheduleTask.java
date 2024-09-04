@@ -4,11 +4,9 @@ import cemp.service.FetchDataService;
 import com.alibaba.cloud.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-
-@Component
+//@Component
 public class ScheduleTask {
 
     @Autowired
@@ -33,9 +31,12 @@ public class ScheduleTask {
         }
     }
 
+
+
     /**
      * 实时数据
-     * 每分钟
+     * 重点股票每分钟更新数据
+     *
      */
     @Scheduled(cron = "0 0/1 * * * ?")
     public void current() {
@@ -44,19 +45,52 @@ public class ScheduleTask {
         }
     }
 
+    /**
+     * 每个月月初凌晨0点
+     * 初始化stock 基础数据
+     * 每
+     */
+    @Scheduled(cron = "0 0 0 0 1/1 ?")
+    public void initMonthly() {
+        fetchDataService.maintainMonthly();
+    }
+
+    /**
+     * 每天更新stock_status
+     * 每天0 点
+     *
+     */
+    @Scheduled(cron = "0 0 0 1/1 * ?")
+    public void initDaily() {
+        fetchDataService.maintainDaily();
+    }
+
+
+
+//    /**
+//     * 每天 8点执行
+//     * 历史成交
+//     * 先查看昨天是否已经有数据，如果没有数据 则补入历史数据
+//     */
+//    @Scheduled(cron = "0 0 8 1/1 * ?")
+//    public void history() {
+//        if(StockUtils.isOpenYestoday()){
+//            LocalDate date = LocalDate.now().minusDays(1L);
+//            String dateStr = String.format("%s-%s-%s",date.getYear(),String.format("%02d", date.getMonthValue()),String.format("%02d", date.getDayOfMonth()));
+//            fetchDataService.history5(dateStr);
+//        }
+//    }
 
 
     /**
-     * 每天 8点执行
-     * 历史成交
-     * 先查看昨天是否已经有数据，如果没有数据 则补入历史数据
+     * 每天1-8点执行,每5分钟执行一次,每个批次跑50条数据
+     * 上海股票 前一天的历史数据入库
+     *
      */
-    @Scheduled(cron = "0 0 8 1/1 * ?")
-    public void history() {
+    @Scheduled(cron = "0 0/5 1,2,3,4,5,6,7,8 * * ?")
+    public void historySH() {
         if(StockUtils.isOpenYestoday()){
-            LocalDate date = LocalDate.now().minusDays(1L);
-            String dateStr = String.format("%s-%s-%s",date.getYear(),String.format("%02d", date.getMonthValue()),String.format("%02d", date.getDayOfMonth()));
-            fetchDataService.history5(dateStr);
+            fetchDataService.historySH();
         }
     }
 

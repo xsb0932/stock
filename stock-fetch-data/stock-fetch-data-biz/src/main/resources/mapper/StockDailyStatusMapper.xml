@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cemp.mapper.StockDailyStatusMapper">
+
+    <resultMap id="BaseResultMap" type="cemp.entity.StockDailyStatus">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="stock_code" column="stock_code" jdbcType="VARCHAR"/>
+            <result property="status" column="status" jdbcType="VARCHAR"/>
+            <result property="last_date" column="last_date" jdbcType="DATE"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,stock_code,status,
+        last_date
+    </sql>
+
+    <update id="updateAll">
+        update stock_daily_status
+        set status = '0'
+        where stock_code not  in
+        <foreach collection="stockCodes" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+</mapper>

@@ -24,6 +24,8 @@ import static cemp.common.constant.StockCommonConstant.STOCK_TABLE_PREFIX;
 @Slf4j
 public class StockUtils {
 
+    public static String [] stocks = new String[]{"002648","600761","600019"};
+
     public static boolean isOpenYestoday(){
         LocalDate date = LocalDate.now().minusDays(1L);
         return date.getDayOfWeek().getValue() <6;
@@ -31,6 +33,10 @@ public class StockUtils {
 
     public static boolean isOpenToday(){
         LocalDate date = LocalDate.now();
+        return date.getDayOfWeek().getValue() <6;
+    }
+
+    public static boolean isOpen( LocalDate date){
         return date.getDayOfWeek().getValue() <6;
     }
 
@@ -59,10 +65,10 @@ public class StockUtils {
                     //可指定时间戳
                     //todo 生成的时间是否有问题
                     String dp = DateUtil.getDatePrefix().concat(detail.getTime());
-                    log.info("time str:"+dp);
+                    //log.info("time str:"+dp);
                     Date dt = DateUtil.fmt_ds.parse(dp);
-                    log.info("time1:" + dt);
-                    log.info("time2:"+ dt.getTime());
+                    //log.info("time1:" + dt);
+                    //log.info("time2:"+ dt.getTime());
                     //Date dt = DateUtil.fmt_ds.parse(DateUtil.getDatePrefix().concat(detail.getTime()));
                     /** 批量插入 **/
                     Point.Builder builder = Point.measurement(STOCK_TABLE_PREFIX.concat(stockCode.toString()));
