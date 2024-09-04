@@ -7,8 +7,11 @@ import cemp.domain.response.ApiAllStockResponse;
 import cemp.domain.response.ApiCurrentDetails;
 import cemp.domain.response.ApiCurrentResponse;
 import cemp.entity.BusStaDate;
+import cemp.entity.StockAll;
 import cemp.entity.StockDailyStatus;
 import cemp.mapper.BusStaDateMapper;
+import cemp.mapper.StockAllMapper;
+import cemp.mapper.StockDailyStatusMapper;
 import cemp.redis.util.RedisUtils;
 import cemp.util.DateUtil;
 import cemp.util.DateUtils;
@@ -77,6 +80,8 @@ public class FetchDataService {
 
 
     private final BusStaDateMapper busStaDateMapper;
+    private final StockDailyStatusMapper stockDailyStatusMapper;
+    private final StockAllMapper stockAllMapper;
 
     public String max(String stockCode){
         String sql = "select max(price) as price from test_stock";
@@ -293,7 +298,7 @@ public class FetchDataService {
             if(StockUtils.isOpen(begin)){
                 rtnList.add(begin);
             }
-            begin.plusDays(1);
+            begin = begin.plusDays(1);
         }
         return rtnList;
     }
@@ -319,30 +324,42 @@ public class FetchDataService {
     private void historyHandle(String stockCode,String date){
         //查询
         String url = String.format("%s%s?token=%s&date=%s&code=%s",STOCK_HOST,STOCK_URL_HISTORY,STOCK_TOKEN,date,stockCode);
+        log.info(url);
         ApiCurrentResponse response =  restTemplate.getForObject(url,ApiCurrentResponse.class);
         //解析
         BatchPoints batchPoints = BatchPoints.database("stock")
                 .consistency(InfluxDB.ConsistencyLevel.ALL)
                 .build();
-        response.getData().forEach(detail -> {
-            try{
-                /** 批量插入 **/
-                Point.Builder builder = Point.measurement(STOCK_TABLE_PREFIX.concat(stockCode.toString()));
-                //可指定时间戳
-                Date dt = DateUtil.fmt_ds.parse(detail.getTime());
-                builder.time(dt.getTime(), TimeUnit.MILLISECONDS);
-                //tag属性只能存储String类型
-                builder.tag("code", stockCode.toString());
-                //设置field
-                builder.addField("price", new BigDecimal(detail.getPrice()));
-                builder.addField("shoushu", Integer.valueOf(detail.getShoushu()));
-                builder.addField("danshu", Integer.valueOf(detail.getDanShu()));
-                batchPoints.point(builder.build());
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+        if(response != null){
+            response.getData().forEach(detail -> {
+                try{
+                    /** 批量插入 **/
+                    Point.Builder builder = Point.measurement(STOCK_TABLE_PREFIX.concat(stockCode.toString()));
+                    //可指定时间戳
+                    Date dt = DateUtil.fmt_ds.parse(detail.getTime());
+                    builder.time(dt.getTime(), TimeUnit.MILLISECONDS);
+                    //tag属性只能存储String类型
+                    builder.tag("code", stockCode.toString());
+                    //设置field
+                    builder.addField("price", new BigDecimal(detail.getPrice()));
+                    builder.addField("shoushu", Integer.valueOf(detail.getShoushu()));
+                    builder.addField("danshu", Integer.valueOf(detail.getDanShu()));
+                    batchPoints.point(builder.build());
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
 
-        });
+            });
+        }else{
+            log.info("stockCode:".concat(stockCode).concat("response null"));
+        }
+        //
+        LambdaQueryWrapper<StockDailyStatus> lqw = new LambdaQueryWrapper();
+        lqw.eq(StockDailyStatus::getStockCode,stockCode);
+        StockDailyStatus stockUO = new StockDailyStatus();
+        stockUO.setStatus("1");
+        stockDailyStatusMapper.update(stockUO,lqw);
+
         //入库
         influxDB.write(batchPoints);
     }
@@ -357,12 +374,12 @@ public class FetchDataService {
         //遍历
         for (StockDailyStatus stock : stocks) {
             //判断当前股票有多少历史数据需要补
-            Date lastDate = stock.getLast_date();
-            List<LocalDate> unhandleDates =  getUnhandleDates(stock.getStock_code(),lastDate);
+            Date lastDate = stock.getLastDate();
+            List<LocalDate> unhandleDates =  getUnhandleDates(stock.getStockCode(),lastDate);
             unhandleDates.forEach(new Consumer<LocalDate>() {
                 @Override
                 public void accept(LocalDate date) {
-                    historyHandle(stock.getStock_code(),DateUtil.localDate2Str(date));
+                    historyHandle(stock.getStockCode(),DateUtil.localDate2Str(date));
                 }
             });
         }

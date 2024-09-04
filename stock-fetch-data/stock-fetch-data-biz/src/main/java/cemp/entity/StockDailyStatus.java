@@ -22,11 +22,11 @@ public class StockDailyStatus implements Serializable {
     @TableId(value = "id",type = IdType.AUTO)
     private Integer id;
 
-    private String stock_code;
+    private String stockCode;
 
     private String status;
 
-    private Date last_date;
+    private Date lastDate;
 
     private static final long serialVersionUID = 1L;
 
@@ -43,9 +43,9 @@ public class StockDailyStatus implements Serializable {
         }
         StockDailyStatus other = (StockDailyStatus) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getStock_code() == null ? other.getStock_code() == null : this.getStock_code().equals(other.getStock_code()))
+            && (this.getStockCode() == null ? other.getStockCode() == null : this.getStockCode().equals(other.getStockCode()))
             && (this.getStatus() == null ? other.getStatus() == null : this.getStatus().equals(other.getStatus()))
-            && (this.getLast_date() == null ? other.getLast_date() == null : this.getLast_date().equals(other.getLast_date()));
+            && (this.getLastDate() == null ? other.getLastDate() == null : this.getLastDate().equals(other.getLastDate()));
     }
 
     @Override
@@ -53,9 +53,9 @@ public class StockDailyStatus implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getStock_code() == null) ? 0 : getStock_code().hashCode());
+        result = prime * result + ((getStockCode() == null) ? 0 : getStockCode().hashCode());
         result = prime * result + ((getStatus() == null) ? 0 : getStatus().hashCode());
-        result = prime * result + ((getLast_date() == null) ? 0 : getLast_date().hashCode());
+        result = prime * result + ((getLastDate() == null) ? 0 : getLastDate().hashCode());
         return result;
     }
 
@@ -66,9 +66,9 @@ public class StockDailyStatus implements Serializable {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
-        sb.append(", stock_code=").append(stock_code);
+        sb.append(", stockCode=").append(stockCode);
         sb.append(", status=").append(status);
-        sb.append(", last_date=").append(last_date);
+        sb.append(", lastDate=").append(lastDate);
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append("]");
         return sb.toString();

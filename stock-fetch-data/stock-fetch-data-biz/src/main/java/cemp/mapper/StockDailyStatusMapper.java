@@ -5,14 +5,13 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
 /**
 * @author xsb_t
 * @description 针对表【stock_daily_status】的数据库操作Mapper
-* @createDate 2024-09-03 15:12:00
+* @createDate 2024-09-04 16:37:02
 * @Entity cemp.entity.StockDailyStatus
 */
 public interface StockDailyStatusMapper extends BaseMapper<StockDailyStatus> {
