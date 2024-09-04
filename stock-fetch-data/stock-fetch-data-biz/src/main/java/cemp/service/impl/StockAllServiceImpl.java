@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 /**
 * @author xsb_t
 * @description 针对表【stock_all】的数据库操作Service实现
-* @createDate 2024-09-03 15:21:18
+* @createDate 2024-09-04 18:55:32
 */
 @Service
 @RequiredArgsConstructor
@@ -27,7 +27,6 @@ public class StockAllServiceImpl extends ServiceImpl<StockAllMapper, StockAll>
 
     @Autowired
     RestTemplate restTemplate;
-
     @Override
     public void init() {
         //删除所有
@@ -48,8 +47,6 @@ public class StockAllServiceImpl extends ServiceImpl<StockAllMapper, StockAll>
                 getBaseMapper().insert(stock);
             }
         });
-
-
     }
 }
 

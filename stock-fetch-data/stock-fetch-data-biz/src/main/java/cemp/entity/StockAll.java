@@ -21,7 +21,7 @@ public class StockAll implements Serializable {
     @TableId(value = "id",type = IdType.AUTO)
     private Integer id;
 
-    private String stock_code;
+    private String stockCode;
 
     private String gl;
 
@@ -44,7 +44,7 @@ public class StockAll implements Serializable {
         }
         StockAll other = (StockAll) that;
         return (this.getId() == null ? other.getId() == null : this.getId().equals(other.getId()))
-            && (this.getStock_code() == null ? other.getStock_code() == null : this.getStock_code().equals(other.getStock_code()))
+            && (this.getStockCode() == null ? other.getStockCode() == null : this.getStockCode().equals(other.getStockCode()))
             && (this.getGl() == null ? other.getGl() == null : this.getGl().equals(other.getGl()))
             && (this.getName() == null ? other.getName() == null : this.getName().equals(other.getName()))
             && (this.getJys() == null ? other.getJys() == null : this.getJys().equals(other.getJys()));
@@ -55,7 +55,7 @@ public class StockAll implements Serializable {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((getId() == null) ? 0 : getId().hashCode());
-        result = prime * result + ((getStock_code() == null) ? 0 : getStock_code().hashCode());
+        result = prime * result + ((getStockCode() == null) ? 0 : getStockCode().hashCode());
         result = prime * result + ((getGl() == null) ? 0 : getGl().hashCode());
         result = prime * result + ((getName() == null) ? 0 : getName().hashCode());
         result = prime * result + ((getJys() == null) ? 0 : getJys().hashCode());
@@ -69,7 +69,7 @@ public class StockAll implements Serializable {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
-        sb.append(", stock_code=").append(stock_code);
+        sb.append(", stockCode=").append(stockCode);
         sb.append(", gl=").append(gl);
         sb.append(", name=").append(name);
         sb.append(", jys=").append(jys);
