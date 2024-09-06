@@ -42,6 +42,11 @@ class CempBmsBizApplicationTests {
     }
 
     @Test
+    void current(){
+        fetchDataService.staCurrent();
+    }
+
+    @Test
     void sendMail(){
         stockMailSender.send("xsb_terry@163.com","597780384@qq.com","test msg");
 //        SimpleMailMessage message = new SimpleMailMessage();

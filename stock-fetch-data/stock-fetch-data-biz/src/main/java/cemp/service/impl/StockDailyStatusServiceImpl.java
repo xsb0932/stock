@@ -29,6 +29,7 @@ public class StockDailyStatusServiceImpl extends ServiceImpl<StockDailyStatusMap
 
     @Override
     public void init() {
+        getBaseMapper().delete(null);
         getBaseMapper().init();
     }
 

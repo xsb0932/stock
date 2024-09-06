@@ -20,35 +20,35 @@ public class FetchDataController {
     @Autowired
     FetchDataService fetchDataService;
 
+    /*
+    -------------------------------------定时任务都做接口-----------------------------------------
+     */
+
     @GetMapping("/current")
-    public String list(@RequestParam("stockCode") String stockCode) {
-        return fetchDataService.getCurrent(stockCode);
-
+    public String current() {
+        fetchDataService.staCurrent();
+        return "success";
     }
 
-    @GetMapping("/all")
-    public String all() {
-        return fetchDataService.getAllStocks();
-
-    }
-    @GetMapping("/testdb")
-    public String testdb() {
-        return fetchDataService.testDB();
-
+    @GetMapping("/monthly")
+    public String monthly() {
+        fetchDataService.maintainMonthly();
+        return "success";
     }
 
-    @GetMapping("/max")
-    public String max(@RequestParam("stockCode") String stockCode) {
-
-        return fetchDataService.inter(stockCode);
-
+    @GetMapping("/daily")
+    public String daily() {
+        fetchDataService.maintainDaily();
+        return "success";
     }
 
     @GetMapping("/history")
-    public String history(@RequestParam("date") String date) {
-
-        return fetchDataService.history5(date);
-
+    public String history() {
+        fetchDataService.historySH();
+        return "success";
     }
+
+    
+
 
 }

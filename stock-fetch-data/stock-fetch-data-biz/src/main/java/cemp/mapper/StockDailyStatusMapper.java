@@ -16,7 +16,7 @@ import java.util.List;
 */
 public interface StockDailyStatusMapper extends BaseMapper<StockDailyStatus> {
 
-    @Insert("insert into stock_daily_status (stock_code , status, last_date) select stock_code , '0' , CURRENT_DATE from stock_all")
+    @Insert("insert into stock_daily_status (stock_code , status, last_date) select stock_code , '1' , CURRENT_DATE from stock_all")
     void init();
 
     void updateAll(@Param("stockCodes") List<String> stockCodes);

@@ -358,8 +358,8 @@ public class FetchDataService {
         lqw.eq(StockDailyStatus::getStockCode,stockCode);
         StockDailyStatus stockUO = new StockDailyStatus();
         stockUO.setStatus("1");
+        stockUO.setLastDate(DateUtil.localDate2Date(LocalDate.now()));
         stockDailyStatusMapper.update(stockUO,lqw);
-
         //入库
         influxDB.write(batchPoints);
     }
@@ -395,15 +395,15 @@ public class FetchDataService {
         //String[] stockCodes = new String[]{"002648"};
         for (int i = 0; i < stockCodes.length; i++) {
             String stockCode = stockCodes[i];
-            String url = String.format("%s%s?token=%s&code=%s&all=1",STOCK_HOST,STOCK_URL_CURRENT,STOCK_TOKEN,stockCode);
-            ApiCurrentResponse response =  restTemplate.getForObject(url,ApiCurrentResponse.class);
 
             //获取时间游标
             LocalDateTime timeCursor = getCursor(stockCode);
             // 判断是否已收盘
-            if(this.isClose(timeCursor)){
+            if(!this.isClose()){
                 System.out.println("已收盘");
             }else{
+                String url = String.format("%s%s?token=%s&code=%s&all=1",STOCK_HOST,STOCK_URL_CURRENT,STOCK_TOKEN,stockCode);
+                ApiCurrentResponse response =  restTemplate.getForObject(url,ApiCurrentResponse.class);
                 //过滤有效数据
                 List<ApiCurrentDetails> datas = response.getData().stream().filter(detail -> {
                     String fullTime = DateUtil.getDatePrefix().concat(detail.getTime());
@@ -453,6 +453,21 @@ public class FetchDataService {
             return true;
         }
         return false;
+    }
+
+    /**
+     * 判断时候当天已收盘
+     *
+     */
+    private boolean isClose(){
+        // todo 判断收盘的标志维护再本地guava
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime begin = LocalDateTime.of(now.getYear(),now.getMonthValue(),now.getDayOfMonth(),9,15,0);
+        LocalDateTime end = LocalDateTime.of(now.getYear(),now.getMonthValue(),now.getDayOfMonth(),15,15,0);
+        if (now.compareTo(begin) > 0&& now.compareTo(end) < 0){
+            return false;
+        }
+        return true;
     }
 
     private LocalDateTime getCursor(String stockCode){
