@@ -369,6 +369,7 @@ public class FetchDataService {
      * @return
      */
     public String historySH(){
+        log.info("historySH");
         //查询待处理的50条股票
         List<StockDailyStatus> stocks = stockDailyStatusService.findUnhandle();
         //遍历
@@ -390,6 +391,7 @@ public class FetchDataService {
      * 统计当天实时数据
      */
     public void staCurrent(){
+        log.info("staCurrent");
         LocalDate date = LocalDate.now();
         String[] stockCodes = new String[]{"002648","600761","600019"};
         //String[] stockCodes = new String[]{"002648"};
@@ -399,8 +401,9 @@ public class FetchDataService {
             //获取时间游标
             LocalDateTime timeCursor = getCursor(stockCode);
             // 判断是否已收盘
-            if(!this.isClose()){
-                System.out.println("已收盘");
+            if(this.isClose()){
+                log.info("已收盘");
+//                System.out.println("已收盘");
             }else{
                 String url = String.format("%s%s?token=%s&code=%s&all=1",STOCK_HOST,STOCK_URL_CURRENT,STOCK_TOKEN,stockCode);
                 ApiCurrentResponse response =  restTemplate.getForObject(url,ApiCurrentResponse.class);
@@ -557,12 +560,14 @@ public class FetchDataService {
      * 3.
      */
     public void maintainDaily() {
+        log.info("maintainDaily");
         //更新数据库status表
         stockDailyStatusService.updateAllStocks();
 
     }
 
     public void maintainMonthly(){
+        log.info("maintainDaily");
         //初始化stock_all
         stockAllService.init();
         //初始化stock_status
