@@ -4,9 +4,11 @@ import cemp.service.FetchDataService;
 import com.alibaba.cloud.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-//@Component
+
+@Component
 public class ScheduleTask {
 
     @Autowired
