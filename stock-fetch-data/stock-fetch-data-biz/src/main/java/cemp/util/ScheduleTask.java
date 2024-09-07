@@ -52,7 +52,7 @@ public class ScheduleTask {
      * 初始化stock 基础数据
      * 每
      */
-    @Scheduled(cron = "0 0 0 0 1/1 ?")
+    @Scheduled(cron = "0 0 0 1 1/1 ?")
     public void initMonthly() {
         fetchDataService.maintainMonthly();
     }
