@@ -1,6 +1,7 @@
 # 使用官方的OpenJDK基础镜像
 FROM eclipse-temurin:17.0.9_9-jdk-alpine
-
+RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo "Asia/Shanghai" > /etc/timezone
 # 将工作目录设置为/app
 WORKDIR /app
 
