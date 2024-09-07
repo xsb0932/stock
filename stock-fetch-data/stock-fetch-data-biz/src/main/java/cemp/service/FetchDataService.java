@@ -25,6 +25,8 @@ import com.alibaba.nacos.shaded.com.google.common.collect.Lists;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.BatchPoints;
 import org.influxdb.dto.Point;
@@ -56,6 +58,7 @@ import static cemp.common.constant.StockCommonConstant.*;
 @Slf4j
 public class FetchDataService {
 
+
     @Value("${stock.mail.from}")
     private String stockFrom;
     @Value("${stock.mail.to}")
@@ -82,6 +85,10 @@ public class FetchDataService {
     private final BusStaDateMapper busStaDateMapper;
     private final StockDailyStatusMapper stockDailyStatusMapper;
     private final StockAllMapper stockAllMapper;
+
+    public void test2(){
+        log.info("123456");
+    }
 
     public String max(String stockCode){
         String sql = "select max(price) as price from test_stock";

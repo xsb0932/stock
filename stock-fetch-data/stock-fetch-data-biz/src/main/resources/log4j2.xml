@@ -7,7 +7,7 @@
         <!--LOG_HOME:指定当前日志存放的目录 -->
         <property name="LOG_HOME">logs</property>
         <!--FILE_NAME:指定日志文件的名称 -->
-        <property name="FILE_NAME">stock-fetch-data</property>
+        <property name="FILE_NAME">cemp-bms</property>
     </properties>
     <!--Appenders:定义日志输出目的地，内容和格式等 -->
     <Appenders>
@@ -55,7 +55,7 @@
     <Loggers>
         <!--name: 打印日志的类的包路径 -->
         <!--additivity: true当前的Logger打印的日志附加到Root，false仅仅打印到RollingFile -->
-        <Logger name="com.landleaf.bms.controller" level="DEBUG" additivity="true">
+        <Logger name="cemp.*" level="info" additivity="true">
             <AppenderRef ref="RollingFile" />
         </Logger>
         <!--Root:日志默认打印到控制台 -->
