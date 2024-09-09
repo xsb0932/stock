@@ -409,8 +409,8 @@ public class FetchDataService {
             LocalDateTime timeCursor = getCursor(stockCode);
             // 判断是否已收盘
             if(this.isClose()){
-                log.info("已收盘");
-//                System.out.println("已收盘");
+                //log.info("已收盘");
+                System.out.println("已收盘");
             }else{
                 String url = String.format("%s%s?token=%s&code=%s&all=1",STOCK_HOST,STOCK_URL_CURRENT,STOCK_TOKEN,stockCode);
                 ApiCurrentResponse response =  restTemplate.getForObject(url,ApiCurrentResponse.class);
@@ -472,6 +472,7 @@ public class FetchDataService {
     private boolean isClose(){
         // todo 判断收盘的标志维护再本地guava
         LocalDateTime now = LocalDateTime.now();
+        log.info("时间:"+now);
         LocalDateTime begin = LocalDateTime.of(now.getYear(),now.getMonthValue(),now.getDayOfMonth(),9,15,0);
         LocalDateTime end = LocalDateTime.of(now.getYear(),now.getMonthValue(),now.getDayOfMonth(),15,15,0);
         if (now.compareTo(begin) > 0&& now.compareTo(end) < 0){
