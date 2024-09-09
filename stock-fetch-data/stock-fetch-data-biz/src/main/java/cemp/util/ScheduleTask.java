@@ -2,13 +2,15 @@ package cemp.util;
 
 import cemp.service.FetchDataService;
 import com.alibaba.cloud.commons.lang.StringUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 
-@Component
+//@Component
+@Slf4j
 public class ScheduleTask {
 
     @Autowired
@@ -42,9 +44,11 @@ public class ScheduleTask {
      */
     @Scheduled(cron = "0 0/1 * * * ?")
     public void current() {
+        log.info("schedule task staCurrent begin");
         if(StockUtils.isOpenToday()){       //后期改成guava 本地缓存维护 （每天只计算一次）
             fetchDataService.staCurrent();
         }
+        log.info("schedule task staCurrent end");
     }
 
     /**
@@ -54,7 +58,9 @@ public class ScheduleTask {
      */
     @Scheduled(cron = "0 0 0 1 1/1 ?")
     public void initMonthly() {
+        log.info("schedule task initMonthly begin");
         fetchDataService.maintainMonthly();
+        log.info("schedule task initMonthly begin");
     }
 
     /**
@@ -64,7 +70,9 @@ public class ScheduleTask {
      */
     @Scheduled(cron = "0 0 0 1/1 * ?")
     public void initDaily() {
+        log.info("schedule task initDaily begin");
         fetchDataService.maintainDaily();
+        log.info("schedule task initDaily begin");
     }
 
 
@@ -91,9 +99,11 @@ public class ScheduleTask {
      */
     @Scheduled(cron = "0 0/5 1,2,3,4,5,6,7,8 * * ?")
     public void historySH() {
+        log.info("schedule task historySH begin");
         if(StockUtils.isOpenYestoday()){
             fetchDataService.historySH();
         }
+        log.info("schedule task historySH begin");
     }
 
     public static void main(String[] args) {

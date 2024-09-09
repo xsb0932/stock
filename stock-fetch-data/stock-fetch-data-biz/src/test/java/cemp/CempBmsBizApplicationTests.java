@@ -27,6 +27,11 @@ class CempBmsBizApplicationTests {
     }
 
     @Test
+    void test() {
+        fetchDataService.test2();
+    }
+
+    @Test
     void maintainDaily(){
         fetchDataService.maintainDaily();
     }

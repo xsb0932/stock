@@ -87,6 +87,7 @@ public class FetchDataService {
     private final StockAllMapper stockAllMapper;
 
     public void test2(){
+        int a = 1/0;
         log.info("123456");
     }
 
@@ -331,7 +332,7 @@ public class FetchDataService {
     private void historyHandle(String stockCode,String date){
         //查询
         String url = String.format("%s%s?token=%s&date=%s&code=%s",STOCK_HOST,STOCK_URL_HISTORY,STOCK_TOKEN,date,stockCode);
-        log.info(url);
+        //log.info(url);
         ApiCurrentResponse response =  restTemplate.getForObject(url,ApiCurrentResponse.class);
         //解析
         BatchPoints batchPoints = BatchPoints.database("stock")
@@ -376,7 +377,6 @@ public class FetchDataService {
      * @return
      */
     public String historySH(){
-        log.info("historySH");
         //查询待处理的50条股票
         List<StockDailyStatus> stocks = stockDailyStatusService.findUnhandle();
         //遍历
@@ -398,7 +398,7 @@ public class FetchDataService {
      * 统计当天实时数据
      */
     public void staCurrent(){
-        log.info("staCurrent");
+
         LocalDate date = LocalDate.now();
         String[] stockCodes = new String[]{"002648","600761","600019"};
         //String[] stockCodes = new String[]{"002648"};
@@ -414,35 +414,38 @@ public class FetchDataService {
             }else{
                 String url = String.format("%s%s?token=%s&code=%s&all=1",STOCK_HOST,STOCK_URL_CURRENT,STOCK_TOKEN,stockCode);
                 ApiCurrentResponse response =  restTemplate.getForObject(url,ApiCurrentResponse.class);
-                //过滤有效数据
-                List<ApiCurrentDetails> datas = response.getData().stream().filter(detail -> {
-                    String fullTime = DateUtil.getDatePrefix().concat(detail.getTime());
-                    LocalDateTime dt = LocalDateTime.parse(fullTime,DateUtil.dtf_ds);
-                    return dt.compareTo(timeCursor) > 0;
-                }).collect(Collectors.toList());
-                String newDateCursor = StockUtils.stockBatchInsert(influxDB,"stock",stockCode,timeCursor,datas);
-                //维护新的游标
-                if(StringUtils.isNotBlank(newDateCursor)){
-                    redisUtils.set(STOCK_CURRENT_KEY.concat(stockCode),newDateCursor);
-                }
-                //异动通知
-                Integer exNumber = 0;
-                //维护在缓存
-                if("002648".equals(stockCode)){
-                    exNumber = 5000;
-                }else if("600019".equals(stockCode)){
-                    exNumber = 10000;
-                }else if("600761".equals(stockCode)){
-                    exNumber = 5000;
+                if(response != null && response.getData() != null){
+                    //过滤有效数据
+                    List<ApiCurrentDetails> datas = response.getData().stream().filter(detail -> {
+                        String fullTime = DateUtil.getDatePrefix().concat(detail.getTime());
+                        LocalDateTime dt = LocalDateTime.parse(fullTime,DateUtil.dtf_ds);
+                        return dt.compareTo(timeCursor) > 0;
+                    }).collect(Collectors.toList());
+                    String newDateCursor = StockUtils.stockBatchInsert(influxDB,"stock",stockCode,timeCursor,datas);
+                    //维护新的游标
+                    if(StringUtils.isNotBlank(newDateCursor)){
+                        redisUtils.set(STOCK_CURRENT_KEY.concat(stockCode),newDateCursor);
+                    }
+                    //异动通知
+                    Integer exNumber = 0;
+                    //维护在缓存
+                    if("002648".equals(stockCode)){
+                        exNumber = 5000;
+                    }else if("600019".equals(stockCode)){
+                        exNumber = 10000;
+                    }else if("600761".equals(stockCode)){
+                        exNumber = 5000;
+                    }
+
+                    Integer finalExNumber = exNumber;
+                    List<ApiCurrentDetails> exceptinDatas = datas.stream().filter(detail -> new BigDecimal(detail.getShoushu()).compareTo(BigDecimal.valueOf(finalExNumber)) > 0).collect(Collectors.toList());
+                    if (exceptinDatas != null && exceptinDatas.size() > 0){
+                        //stockMailSender.send(stockFrom,stockTo,String.format("stockCode:%s有异动,成交量手:%s",stockCode,exceptinDatas.get(0).getShoushu()));
+                        stockSendMailService.sendMail(stockFrom,stockTo,String.format("stockCode:%s有异动,成交量手:%s",stockCode,exceptinDatas.get(0).getShoushu()));
+                        log.info(String.format("stockCode:%s有异动,成交量手:%s",stockCode,exceptinDatas.get(0).getShoushu()));
+                    }
                 }
 
-                Integer finalExNumber = exNumber;
-                List<ApiCurrentDetails> exceptinDatas = datas.stream().filter(detail -> new BigDecimal(detail.getShoushu()).compareTo(BigDecimal.valueOf(finalExNumber)) > 0).collect(Collectors.toList());
-                if (exceptinDatas != null && exceptinDatas.size() > 0){
-                    //stockMailSender.send(stockFrom,stockTo,String.format("stockCode:%s有异动,成交量手:%s",stockCode,exceptinDatas.get(0).getShoushu()));
-                    stockSendMailService.sendMail(stockFrom,stockTo,String.format("stockCode:%s有异动,成交量手:%s",stockCode,exceptinDatas.get(0).getShoushu()));
-                    log.info(String.format("stockCode:%s有异动,成交量手:%s",stockCode,exceptinDatas.get(0).getShoushu()));
-                }
             }
 
 
@@ -472,7 +475,6 @@ public class FetchDataService {
     private boolean isClose(){
         // todo 判断收盘的标志维护再本地guava
         LocalDateTime now = LocalDateTime.now();
-        log.info("时间:"+now);
         LocalDateTime begin = LocalDateTime.of(now.getYear(),now.getMonthValue(),now.getDayOfMonth(),9,15,0);
         LocalDateTime end = LocalDateTime.of(now.getYear(),now.getMonthValue(),now.getDayOfMonth(),15,15,0);
         if (now.compareTo(begin) > 0&& now.compareTo(end) < 0){
@@ -568,14 +570,12 @@ public class FetchDataService {
      * 3.
      */
     public void maintainDaily() {
-        log.info("maintainDaily");
         //更新数据库status表
         stockDailyStatusService.updateAllStocks();
 
     }
 
     public void maintainMonthly(){
-        log.info("maintainDaily");
         //初始化stock_all
         stockAllService.init();
         //初始化stock_status
