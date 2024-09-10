@@ -7,7 +7,6 @@ spring:
       discovery:
         namespace: 98f83d2d-9740-4b0d-b158-dae97e5d0a4a
         group: DEFAULT_GROUP
-        ip: localhost
       config:
         server-addr: 39.98.82.109:8848
         namespace: 98f83d2d-9740-4b0d-b158-dae97e5d0a4a
