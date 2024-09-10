@@ -1,5 +1,14 @@
 spring:
   cloud:
+    sentinel:
+      transport:
+        dashboard: 192.168.1.103:8858
+        port: 8719
+      scg:
+        fallback:
+          mode: response
+          response-status: 200
+          response-body: '{ "code": 429,"message": "被限流了！" }'
     nacos:
       username: nacos
       password: nacos
