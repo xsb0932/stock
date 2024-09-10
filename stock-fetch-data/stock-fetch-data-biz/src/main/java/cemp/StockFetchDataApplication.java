@@ -21,10 +21,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @MapperScan("cemp.mapper")
 @EnableFeignClients(clients = {AlarmApi.class
 })
-public class CempBmsBizApplication {
+public class StockFetchDataApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(CempBmsBizApplication.class, args);
+        SpringApplication.run(StockFetchDataApplication.class, args);
     }
 
 }

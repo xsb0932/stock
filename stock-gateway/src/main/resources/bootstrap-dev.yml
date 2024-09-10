@@ -15,3 +15,4 @@ spring:
   config:
     import:
       - optional:nacos:${spring.application.name}
+      - optional:nacos:license

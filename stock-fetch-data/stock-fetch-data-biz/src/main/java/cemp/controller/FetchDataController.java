@@ -2,6 +2,7 @@ package cemp.controller;
 
 
 import cemp.service.FetchDataService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
@@ -29,9 +30,11 @@ public class FetchDataController {
      */
 
     @GetMapping("/test2")
-    public String test2() {
+    public String test2(HttpServletRequest req) {
         logger.info("99999");
-        fetchDataService.test2();
+        if(req.getHeader("X-Tenant-Id") ==null){
+            throw new RuntimeException("没有传入租户信息，接口请求终止");
+        }
         return "success";
     }
 

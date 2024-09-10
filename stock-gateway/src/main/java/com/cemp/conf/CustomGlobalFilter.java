@@ -10,6 +10,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+/**
+ * 全局过滤器
+ * 增加tenantid
+ */
 @Slf4j
 @Component
 public class CustomGlobalFilter implements GlobalFilter, Ordered {

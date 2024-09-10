@@ -3,14 +3,13 @@ spring:
     nacos:
       username: nacos
       password: nacos
-      server-addr: 39.98.82.109:8848
+      server-addr: 192.168.1.103:8848
       discovery:
-        namespace: 98f83d2d-9740-4b0d-b158-dae97e5d0a4a
+        namespace: 87ed7772-382c-43e5-b355-ef671b596ba5
         group: DEFAULT_GROUP
-        ip: localhost
       config:
-        server-addr: 39.98.82.109:8848
-        namespace: 98f83d2d-9740-4b0d-b158-dae97e5d0a4a
+        server-addr: 192.168.1.103:8848
+        namespace: 87ed7772-382c-43e5-b355-ef671b596ba5
         group: DEFAULT_GROUP
         file-extension: yaml
   config:

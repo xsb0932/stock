@@ -1,30 +1,10 @@
-spring:
-  application:
-    name: cemp-gateway
-  profiles:
-    active: dev
-  main:
-    web-application-type: reactive  # gateway和web 的冲突不配置启动会报错
-    allow-circular-references: true # 允许循环依赖，因为项目是三层架构，无法避免这个情况。
-  cloud:
-    sentinel:
-      transport:
-        dashboard: 39.98.82.109:8858
-        port: 8719
-      scg:
-        fallback:
-          mode: response
-          response-status: 200
-          response-body: '{ "code": 429,"message": "被限流了！" }'
-
-nacos:
-  logging:
-    default:
-      config:
-        enabled: false
+#开启日志
+mybatis-plus:
+  mapper-locations: classpath*:mapper/*.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 server:
-  port: 33003
+  port: 33100
   servlet:
     context-path: /
-

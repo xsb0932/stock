@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)//处理特定异常
     public String handleBizException(RuntimeException ex){
         log.info("发生异常",ex);
-        return "error occur";
+        return ex.getMessage();
     }
 
 //    /**
