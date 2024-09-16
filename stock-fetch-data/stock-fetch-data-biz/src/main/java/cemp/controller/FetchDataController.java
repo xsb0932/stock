@@ -1,6 +1,7 @@
 package cemp.controller;
 
 
+import cemp.service.ArthasTestErrorService;
 import cemp.service.FetchDataService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
@@ -24,6 +25,8 @@ public class FetchDataController {
     private static final Logger logger = LogManager.getLogger(FetchDataController.class);
     @Autowired
     FetchDataService fetchDataService;
+    @Autowired
+    ArthasTestErrorService arthasTestErrorService;
 
     /*
     -------------------------------------定时任务都做接口-----------------------------------------
@@ -59,6 +62,18 @@ public class FetchDataController {
     @GetMapping("/history")
     public String history() {
         fetchDataService.historySH();
+        return "success";
+    }
+
+    @GetMapping("/arthas/error1")
+    public String error1() {
+        arthasTestErrorService.error1();
+        return "success";
+    }
+
+    @GetMapping("/arthas/error2")
+    public String error2() {
+        arthasTestErrorService.error2();
         return "success";
     }
 

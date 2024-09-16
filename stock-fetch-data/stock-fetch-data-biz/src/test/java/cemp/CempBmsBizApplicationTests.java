@@ -1,6 +1,7 @@
 package cemp;
 
 import cemp.conf.StockMailSender;
+import cemp.service.ArthasTestErrorService;
 import cemp.service.FetchDataService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ class CempBmsBizApplicationTests {
     @Autowired
     FetchDataService fetchDataService;
 
+    @Autowired
+    ArthasTestErrorService arthasTestErrorService;
+
     @Test
     void contextLoads() {
         RestTemplate restTemplate = new RestTemplate();
@@ -34,6 +38,11 @@ class CempBmsBizApplicationTests {
     @Test
     void maintainDaily(){
         fetchDataService.maintainDaily();
+    }
+
+    @Test
+    void error1(){
+        arthasTestErrorService.error1();
     }
 
     @Test
