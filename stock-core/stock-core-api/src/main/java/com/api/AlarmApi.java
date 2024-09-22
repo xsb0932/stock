@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import java.util.List;
 
 
-@FeignClient(name = "cemp-monitor")
+@FeignClient(name = "stock-core")
 public interface AlarmApi {
 
     @GetMapping("/list")

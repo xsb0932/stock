@@ -32,6 +32,12 @@ public class FetchDataController {
     -------------------------------------定时任务都做接口-----------------------------------------
      */
 
+    @GetMapping("/feign/print")
+    public String feegnPrint() {
+        fetchDataService.feegnPrint();
+        return "success";
+    }
+
     @GetMapping("/test2")
     public String test2(HttpServletRequest req) {
         logger.info("99999");

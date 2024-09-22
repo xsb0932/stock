@@ -15,6 +15,21 @@ services:
         target: /app/logs
     environment:
       - SPRING_PROFILES_ACTIVE=prod
+  stock-core:
+    container_name: stock-core
+    image: stock-core:latest
+    restart: always
+    build:
+      context: ./stock-core
+      dockerfile: dockerfile
+    ports:
+      - "33002:33002"
+    volumes:
+      - type: bind
+        source: /app/docker/elk/filebeat/logs
+        target: /app/logs
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
   stock-gateway:
     container_name: stock-gateway
     image: stock-gateway:latest

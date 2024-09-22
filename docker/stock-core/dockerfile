@@ -1,0 +1,14 @@
+# 使用官方的OpenJDK基础镜像
+FROM eclipse-temurin:17.0.9_9-jdk-alpine
+RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo "Asia/Shanghai" > /etc/timezone
+# RUN apk add --no-cache vim
+
+# 将工作目录设置为/app
+WORKDIR /app
+
+# 将本地的Java应用程序复制到工作目录
+COPY ./stock-core.jar /app/stock-core.jar
+
+# 设置容器启动时运行的命令
+CMD ["java", "-jar", "stock-core.jar"]

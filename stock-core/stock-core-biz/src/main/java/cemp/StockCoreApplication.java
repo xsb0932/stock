@@ -10,7 +10,7 @@ import org.springframework.context.annotation.ComponentScan;
 @EnableConfigurationProperties
 @EnableDiscoveryClient
 @ComponentScan("cemp.*")
-public class CempMonitorBizApplication {
+public class StockCoreApplication {
 
     public static void main(String[] args) {
 //        String osName = System.getProperty("os.name").toLowerCase();
@@ -18,7 +18,7 @@ public class CempMonitorBizApplication {
 //            // 如果是Windows系统，则禁用Nacos服务注册
 //            System.setProperty("spring.cloud.nacos.discovery.enabled", "false");
 //        }
-        SpringApplication.run(CempMonitorBizApplication.class, args);
+        SpringApplication.run(StockCoreApplication.class, args);
     }
 
 }

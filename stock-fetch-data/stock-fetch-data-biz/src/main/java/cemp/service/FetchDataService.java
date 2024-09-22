@@ -22,6 +22,7 @@ import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.cloud.commons.lang.StringUtils;
 import com.alibaba.nacos.shaded.com.google.common.collect.Lists;
+import com.api.AlarmApi;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -80,6 +81,8 @@ public class FetchDataService {
     StockAllService stockAllService;
     @Autowired
     StockDailyStatusService stockDailyStatusService;
+    @Autowired
+    AlarmApi alarmApi;
 
 
     private final BusStaDateMapper busStaDateMapper;
@@ -581,5 +584,9 @@ public class FetchDataService {
         //初始化stock_status
         stockDailyStatusService.init();
 
+    }
+
+    public String feegnPrint() {
+        return alarmApi.list();
     }
 }
