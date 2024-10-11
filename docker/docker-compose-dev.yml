@@ -26,3 +26,18 @@ services:
         target: /app/logs
     environment:
       - SPRING_PROFILES_ACTIVE=dev
+  stock-current-kpi:
+    container_name: stock-current-kpi
+    image: stock-current-kpi:latest
+    restart: always
+    build:
+      context: ./stock-current-kpi
+      dockerfile: dockerfile
+    ports:
+      - "33004:33004"
+    volumes:
+      - type: bind
+        source: /app/docker/elk/filebeat/logs
+        target: /app/logs
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
