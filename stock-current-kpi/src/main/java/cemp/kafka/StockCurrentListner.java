@@ -11,6 +11,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.nacos.shaded.com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.influxdb.dto.QueryResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -27,6 +28,7 @@ import java.util.function.Predicate;
 import static cemp.redis.constant.RedisKey.STOCK_CURRENT_STATUS;
 
 @Component
+@Slf4j
 public class StockCurrentListner {
 
 
@@ -53,8 +55,7 @@ public class StockCurrentListner {
 //            )
 //    })
     public void  current_api(String msg){
-
-        System.out.println(msg);
+        log.info("receive msg;");
         JSONObject obj = JSON.parseObject(msg);
 
         String stockCode = obj.getString("code");
