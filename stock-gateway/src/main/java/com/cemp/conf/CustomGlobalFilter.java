@@ -1,10 +1,12 @@
 package com.cemp.conf;
 
 import cn.hutool.core.util.IdUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -30,6 +32,14 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
                 .header(HEADER_USER_ID,"100001")
                 .header(HEADER_TENANT_ID, "100004")
                 .build();
+        //判断token
+
+        ServerHttpRequest request =exchange.getRequest();
+        HttpHeaders headers =  request.getHeaders();
+        System.out.println(headers.get("token").get(0).toString());
+        if(headers.get("token") == null || ! "sunny0932".equals(headers.get("token").get(0))){
+            throw new RuntimeException("token验证失败");
+        }
         return chain.filter(exchange.mutate().request(req).build());
     }
 

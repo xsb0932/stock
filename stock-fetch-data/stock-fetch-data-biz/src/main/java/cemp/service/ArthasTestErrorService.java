@@ -48,8 +48,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static cemp.common.constant.StockCommonConstant.*;
-import static cemp.constant.RedisKey.STOCK_ALL_KEY;
-import static cemp.constant.RedisKey.STOCK_CURRENT_KEY;
+import static cemp.redis.constant.RedisKey.STOCK_ALL_KEY;
+import static cemp.redis.constant.RedisKey.STOCK_CURRENT_KEY;
 
 @Service
 @RequiredArgsConstructor

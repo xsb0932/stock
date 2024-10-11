@@ -36,7 +36,7 @@ public class StockUtils {
         return date.getDayOfWeek().getValue() <6;
     }
 
-    public static boolean isOpen( LocalDate date){
+    public static boolean isNotWeekend(LocalDate date){
         return date.getDayOfWeek().getValue() <6;
     }
 

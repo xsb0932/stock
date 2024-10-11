@@ -1,5 +1,6 @@
 package cemp.service;
 
+import cemp.common.dto.StockCurrentSendDto;
 import cemp.conf.StockMailSender;
 import cemp.config.InfluxDBUtils;
 import cemp.domain.response.ApiAllStockDetails;
@@ -7,7 +8,6 @@ import cemp.domain.response.ApiAllStockResponse;
 import cemp.domain.response.ApiCurrentDetails;
 import cemp.domain.response.ApiCurrentResponse;
 import cemp.entity.BusStaDate;
-import cemp.entity.StockAll;
 import cemp.entity.StockDailyStatus;
 import cemp.mapper.BusStaDateMapper;
 import cemp.mapper.StockAllMapper;
@@ -21,20 +21,20 @@ import cn.hutool.core.map.MapUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.cloud.commons.lang.StringUtils;
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.nacos.shaded.com.google.common.collect.Lists;
 import com.api.AlarmApi;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.google.common.cache.LoadingCache;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.BatchPoints;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.QueryResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cglib.core.Local;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
@@ -46,12 +46,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import static cemp.constant.RedisKey.STOCK_CURRENT_KEY;
-import static cemp.constant.RedisKey.STOCK_ALL_KEY;
+import static cemp.redis.constant.RedisKey.STOCK_CURRENT_KEY;
+import static cemp.redis.constant.RedisKey.STOCK_ALL_KEY;
+import static cemp.redis.constant.RedisKey.STOCK_HOLIDY;
 import static cemp.common.constant.StockCommonConstant.*;
 
 @Service
@@ -83,6 +85,10 @@ public class FetchDataService {
     StockDailyStatusService stockDailyStatusService;
     @Autowired
     AlarmApi alarmApi;
+    @Autowired
+    LoadingCache guavaHoliday;
+    @Autowired
+    KafkaTemplate<byte[], byte[]> kafkaTemplate;
 
 
     private final BusStaDateMapper busStaDateMapper;
@@ -306,7 +312,7 @@ public class FetchDataService {
     private List<LocalDate> getDateBetween(LocalDate begin, LocalDate end){
         List<LocalDate> rtnList = new ArrayList<>();
         while(begin.compareTo(end) < 0){
-            if(StockUtils.isOpen(begin)){
+            if(StockUtils.isNotWeekend(begin) && isHoliday(STOCK_HOLIDY,DateUtil.localDate2Str(begin))){
                 rtnList.add(begin);
             }
             begin = begin.plusDays(1);
@@ -318,12 +324,12 @@ public class FetchDataService {
         LocalDate now = LocalDate.now();
         LocalDate ldLstDate = DateUtil.date2LocalDate(lstDate);
         // 计算需要统计的历史时间-天
-        List<LocalDate> daysBetween =  getDateBetween(ldLstDate,now);
+        List<LocalDate> daysBetween =  getDateBetween(ldLstDate.plusDays(1 ),now);
 
-//        daysBetween.forEach(date -> {
-//            //todo 处理历史数据业务
-//            historyHandle(stockCode,DateUtil.localDate2Str(date));
-//        });
+        daysBetween.forEach(date -> {
+            //todo 处理历史数据业务
+            historyHandle(stockCode,DateUtil.localDate2Str(date));
+        });
         return daysBetween;
     }
 
@@ -418,7 +424,7 @@ public class FetchDataService {
                 String url = String.format("%s%s?token=%s&code=%s&all=1",STOCK_HOST,STOCK_URL_CURRENT,STOCK_TOKEN,stockCode);
                 ApiCurrentResponse response =  restTemplate.getForObject(url,ApiCurrentResponse.class);
                 if(response != null && response.getData() != null){
-                    //过滤有效数据
+                    //过滤有效数据,增量数据
                     List<ApiCurrentDetails> datas = response.getData().stream().filter(detail -> {
                         String fullTime = DateUtil.getDatePrefix().concat(detail.getTime());
                         LocalDateTime dt = LocalDateTime.parse(fullTime,DateUtil.dtf_ds);
@@ -447,6 +453,11 @@ public class FetchDataService {
                         stockSendMailService.sendMail(stockFrom,stockTo,String.format("stockCode:%s有异动,成交量手:%s",stockCode,exceptinDatas.get(0).getShoushu()));
                         log.info(String.format("stockCode:%s有异动,成交量手:%s",stockCode,exceptinDatas.get(0).getShoushu()));
                     }
+
+                    //send kafka 全量数据
+                    StockCurrentSendDto sendDto = new StockCurrentSendDto("",stockCode,response.getData());
+                    //kafkaTemplate.send("stock_current", JSON.toJSONString(response.getData()).getBytes());
+                    kafkaTemplate.send("stock_current", JSON.toJSONString(sendDto).getBytes());
                 }
 
             }
@@ -588,5 +599,20 @@ public class FetchDataService {
 
     public String feegnPrint() {
         return alarmApi.list();
+    }
+
+    public boolean isHoliday(String key,String date) {
+        //直接从redis中匹配
+        //Boolean isHoliday = redisUtils.sismember(key, date);
+        //先从本地缓存中找
+        try {
+            Set<String> result = (Set<String>)guavaHoliday.get(key);
+            if(result.contains(date)){
+                return true;
+            }
+        } catch (ExecutionException e) {
+            //do nothing
+        }
+        return false;
     }
 }

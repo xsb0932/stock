@@ -99,6 +99,18 @@ public final class RedisUtils {
         return key == null ? null : redisTemplate.opsForValue().get(key);
     }
 
+    public Set<Object> sget(String key) {
+        Set<Object> set = redisTemplate.opsForSet().members(key);
+        return set;
+    }
+
+    public boolean sismember(String key,String obj) {
+//        Set<Object> set = redisTemplate.opsForSet().members(key);
+        redisTemplate.opsForSet().members(key);
+        return redisTemplate.opsForSet().isMember(key,obj);
+
+    }
+
     /**
      * 普通缓存放入
      *

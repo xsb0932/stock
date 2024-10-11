@@ -32,12 +32,15 @@ public class RedisConfig {
 
         FastJsonRedisSerializer fastJsonRedisSerializer = new FastJsonRedisSerializer(Object.class);
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+        redisTemplate.setDefaultSerializer(fastJsonRedisSerializer);
         // key采用String的序列化方式
         redisTemplate.setKeySerializer(stringRedisSerializer);
         // hash的key也采用String的序列化方式
         redisTemplate.setHashKeySerializer(stringRedisSerializer);
         // valuevalue采用jackson序列化方式
-        redisTemplate.setValueSerializer(fastJsonRedisSerializer);
+        //redisTemplate.setValueSerializer(fastJsonRedisSerializer);
+        // 原本：template.setValueSerializer(jacksonSerializer); 新版本需要用 stringRedisSerializer
+        redisTemplate.setValueSerializer(stringRedisSerializer);
         // hash的value采用jackson序列化方式
         redisTemplate.setHashValueSerializer(fastJsonRedisSerializer);
         redisTemplate.afterPropertiesSet();
