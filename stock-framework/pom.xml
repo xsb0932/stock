@@ -18,6 +18,7 @@
         <module>stock-web</module>
         <module>stock-influx</module>
         <module>stock-mail</module>
+        <module>stock-guava</module>
     </modules>
 
     <properties>
