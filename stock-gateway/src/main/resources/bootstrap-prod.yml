@@ -1,14 +1,14 @@
 spring:
   cloud:
-    sentinel:
-      transport:
-        dashboard: 192.168.1.104:8858
-        port: 8719
-      scg:
-        fallback:
-          mode: response
-          response-status: 200
-          response-body: '{ "code": 429,"message": "被限流了！" }'
+#    sentinel:
+#      transport:
+#        dashboard: 192.168.1.104:8858
+#        port: 8719
+#      scg:
+#        fallback:
+#          mode: response
+#          response-status: 200
+#          response-body: '{ "code": 429,"message": "被限流了！" }'
     nacos:
       username: nacos
       password: nacos
@@ -16,6 +16,7 @@ spring:
       discovery:
         namespace: 9b12d729-3929-4bdb-9f0e-99be5065b8ed
         group: DEFAULT_GROUP
+        ip: 192.168.1.103
       config:
         server-addr: 192.168.1.104:8848
         namespace: 9b12d729-3929-4bdb-9f0e-99be5065b8ed
