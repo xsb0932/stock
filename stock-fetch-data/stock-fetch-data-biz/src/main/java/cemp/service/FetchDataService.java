@@ -312,7 +312,7 @@ public class FetchDataService {
     private List<LocalDate> getDateBetween(LocalDate begin, LocalDate end){
         List<LocalDate> rtnList = new ArrayList<>();
         while(begin.compareTo(end) < 0){
-            if(StockUtils.isNotWeekend(begin) && isHoliday(STOCK_HOLIDY,DateUtil.localDate2Str(begin))){
+            if(StockUtils.isNotWeekend(begin) && !isHoliday(STOCK_HOLIDY,DateUtil.localDate2Str(begin))){
                 rtnList.add(begin);
             }
             begin = begin.plusDays(1);
@@ -324,7 +324,7 @@ public class FetchDataService {
         LocalDate now = LocalDate.now();
         LocalDate ldLstDate = DateUtil.date2LocalDate(lstDate);
         // 计算需要统计的历史时间-天
-        List<LocalDate> daysBetween =  getDateBetween(ldLstDate.plusDays(1 ),now);
+        List<LocalDate> daysBetween =  getDateBetween(ldLstDate,now);
 
         daysBetween.forEach(date -> {
             //todo 处理历史数据业务
