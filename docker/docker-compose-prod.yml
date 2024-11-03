@@ -39,6 +39,7 @@ services:
       dockerfile: dockerfile
     ports:
       - "33100:33100"
+      - "8719:8719"
     volumes:
       - type: bind
         source: /app/docker/elk/filebeat/logs
