@@ -12,7 +12,7 @@ public class DateUtil {
 
     public static DateTimeFormatter dtf_ds = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     public static DateTimeFormatter dtf_dd = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private static SimpleDateFormat fmt_dd = new SimpleDateFormat("yyyy-MM-dd");
+    public static SimpleDateFormat fmt_dd = new SimpleDateFormat("yyyy-MM-dd");
     public static SimpleDateFormat fmt_ds = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     //public static SimpleDateFormat fmt_ds = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
 
@@ -44,6 +44,33 @@ public class DateUtil {
 
     public static LocalDate date2LocalDate(Date date){
         return LocalDate.parse(date2Str(date),dtf_dd);
+    }
+
+    public static Date str2Date(String date){
+        try {
+            return fmt_dd.parse(date);
+        } catch (ParseException e) {
+            return null;
+        } catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static Date str2Date(String date,SimpleDateFormat fmt){
+        try {
+            return fmt.parse(date);
+        } catch (ParseException e) {
+            return null;
+        }
+    }
+
+    public static Date date2Str(String date,SimpleDateFormat fmt){
+        try {
+            return fmt.parse(date);
+        } catch (ParseException e) {
+            return null;
+        }
     }
 
     public static String date2Str(Date date){

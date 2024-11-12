@@ -2,10 +2,11 @@ package cemp.domain.response;
 
 import lombok.Data;
 
-@Data
-public class ApiCommonResponse {
+import java.util.List;
 
-    private String code;
-    private String msg;
+@Data
+public class ApiCommonResponse<T> extends ApiResponseHead {
+
+    private List<T> data;
 
 }

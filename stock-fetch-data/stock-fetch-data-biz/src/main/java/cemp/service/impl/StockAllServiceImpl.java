@@ -2,6 +2,10 @@ package cemp.service.impl;
 
 import cemp.domain.response.ApiAllStockDetails;
 import cemp.domain.response.ApiAllStockResponse;
+import cn.hutool.core.util.NumberUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import cemp.entity.StockAll;
 import cemp.service.StockAllService;
@@ -11,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -47,6 +53,26 @@ public class StockAllServiceImpl extends ServiceImpl<StockAllMapper, StockAll>
                 getBaseMapper().insert(stock);
             }
         });
+    }
+
+    @Override
+    public List<StockAll> selectBatch50(int pageSize, int pageNum) {
+        LambdaQueryWrapper<StockAll> lqw = new LambdaQueryWrapper<>();
+        IPage<StockAll> page = new Page<>(pageNum, pageSize);
+        IPage<StockAll> result = this.getBaseMapper().selectPage(page, lqw);
+        List<StockAll> records = result.getRecords();
+        return records;
+    }
+
+    @Override
+    public Integer totalBatchNum() {
+        Long totalNum = this.getBaseMapper().selectCount(null);
+        return NumberUtil.div(new BigDecimal(totalNum), new BigDecimal(200),0, RoundingMode.FLOOR).intValue();
+    }
+
+    public static void main(String[] args) {
+        Long totalNum = (520333L);
+        System.out.println(NumberUtil.div(new BigDecimal(totalNum), new BigDecimal(200),0, RoundingMode.CEILING));
     }
 }
 

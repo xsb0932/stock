@@ -2,8 +2,9 @@ spring:
   cloud:
     sentinel:
       transport:
-        dashboard: 39.98.82.109:8858
-        port: 8719
+        dashboard: 39.98.82.109:8858        #sentinel dashboard地址
+        port: 8719                          #gateway和sentinel 通信的http-server 端口
+        clientIp: 192.168.1.103             #gateway作为client 的ip 这个地址必须要sentinel能互通
       scg:
         fallback:
           mode: response

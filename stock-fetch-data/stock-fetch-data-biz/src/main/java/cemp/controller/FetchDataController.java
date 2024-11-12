@@ -53,6 +53,19 @@ public class FetchDataController {
         return "success";
     }
 
+    @GetMapping("/base/history")
+    public String baseHistory(@RequestParam("startDate") String startDate,
+                              @RequestParam("endDate") String endDate) {
+        fetchDataService.sendBaseHistoryBatch(startDate,endDate);
+        return "success";
+    }
+
+    @GetMapping("/base/all/stocks")
+    public String baseHistory() {
+        fetchDataService.getAllStocks();
+        return "success";
+    }
+
     @GetMapping("/monthly")
     public String monthly() {
         fetchDataService.maintainMonthly();

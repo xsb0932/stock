@@ -4,8 +4,7 @@ import cemp.common.util.DateUtils;
 import cemp.conf.StockMailSender;
 import cemp.domain.response.ApiCurrentResponse;
 import cemp.redis.util.RedisUtils;
-import cemp.service.ArthasTestErrorService;
-import cemp.service.FetchDataService;
+import cemp.service.*;
 import com.alibaba.fastjson2.JSON;
 import com.google.common.cache.LoadingCache;
 import org.junit.jupiter.api.Test;
@@ -45,7 +44,48 @@ class CempBmsBizApplicationTests {
 
     @Autowired
     RestTemplate restTemplate;
+    @Autowired
+    StockPlateService stockPlateService;
+    @Autowired
+    StockKpiDayService stockKpiDayService;
+    @Autowired
+    StockAllService stockAllService;
 
+    @Test
+    void testAddPlate(){
+        stockPlateService.doAdd();
+    };
+
+    @Test
+    void testBaseDay(){
+        stockKpiDayService.doImport("2024-11-01","2024-11-07","002648");
+    };
+
+    @Test
+    void testInitBaseDayKpi(){
+        stockAllService.selectBatch50(50,1);
+    };
+
+    @Test
+    void testBaseHistory(){
+        fetchDataService.sendBaseHistoryTask("2024-11-01","2024-11-10");
+    }
+
+    @Test
+    void initBaseDayKpi(){
+        try{
+            fetchDataService.initBaseDayKpi2("2024-11-01","2024-11-08");
+        }catch (Exception e){
+            e.printStackTrace();
+            System.out.println("error");
+        }
+
+    };
+
+    @Test
+    void testInitPlate(){
+        stockPlateService.init();
+    };
 
     @Test
     void contextLoads() {

@@ -19,6 +19,7 @@
         <module>stock-influx</module>
         <module>stock-mail</module>
         <module>stock-guava</module>
+        <module>stock-mybatis</module>
     </modules>
 
     <properties>

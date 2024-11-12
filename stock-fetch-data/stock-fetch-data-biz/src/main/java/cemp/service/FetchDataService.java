@@ -8,6 +8,7 @@ import cemp.domain.response.ApiAllStockResponse;
 import cemp.domain.response.ApiCurrentDetails;
 import cemp.domain.response.ApiCurrentResponse;
 import cemp.entity.BusStaDate;
+import cemp.entity.StockAll;
 import cemp.entity.StockDailyStatus;
 import cemp.mapper.BusStaDateMapper;
 import cemp.mapper.StockAllMapper;
@@ -26,15 +27,18 @@ import com.alibaba.nacos.shaded.com.google.common.collect.Lists;
 import com.api.AlarmApi;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.cache.LoadingCache;
+import io.netty.util.concurrent.CompleteFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.influxdb.InfluxDB;
 import org.influxdb.dto.BatchPoints;
 import org.influxdb.dto.Point;
 import org.influxdb.dto.QueryResult;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
@@ -46,7 +50,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -84,9 +90,17 @@ public class FetchDataService {
     @Autowired
     StockDailyStatusService stockDailyStatusService;
     @Autowired
+    StockPlateService stockPlateService;
+    @Autowired
+    StockKpiDayService stockKpiDayService;
+    @Autowired
     AlarmApi alarmApi;
     @Autowired
     LoadingCache guavaHoliday;
+    @Autowired
+    ThreadPoolTaskExecutor baseStockExecutor;
+    @Autowired
+    RabbitTemplate rabbitTemplate;
     @Autowired
     KafkaTemplate<byte[], byte[]> kafkaTemplate;
 
@@ -98,6 +112,51 @@ public class FetchDataService {
     public void test2(){
         int a = 1/0;
         log.info("123456");
+    }
+
+    private Integer getTaskNum(){
+        String taskNum = redisUtils.get("stock_base_history_task").toString();
+        if(taskNum == null){
+            redisUtils.set("stock_base_history_task",1,120);
+            return 1;
+        }else{
+            return Integer.valueOf(taskNum);
+        }
+
+    }
+
+    public void sendBaseHistoryBatch(String startDate,String endDate){
+        //查询总批次
+        Integer bachNum = 0;
+        bachNum = stockAllService.totalBatchNum();
+        //
+        for (int i = 0; i < bachNum; i++) {
+            sendBaseHistoryTask(startDate,endDate);
+        }
+
+
+    }
+
+    public void sendBaseHistoryTask(String startDate,String endDate){
+        Integer taskNum = this.getTaskNum();
+        String messageId = String.valueOf(UUID.randomUUID());
+        String messageData = "发送rmq任务";
+        String createTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        Map<String, Object> manMap = new HashMap<>();
+        manMap.put("messageId", messageId);
+        manMap.put("messageData", messageData);
+        manMap.put("createTime", createTime);
+        manMap.put("taskNum",taskNum);
+        manMap.put("startDate",startDate);
+        manMap.put("endDate",endDate);
+        /**
+         * exchange 发送消息指定交换机
+         * routingkey 指定topic routingkey 消息会根据rk 跑去绑定的 queue
+         * Object 消息本身
+         */
+        rabbitTemplate.convertAndSend("baseStockHistoryExchange", "rmq_key_base_history", manMap);
+        redisUtils.incr("stock_base_history_task",1);
+        System.out.println("success");
     }
 
     public String max(String stockCode){
@@ -586,7 +645,108 @@ public class FetchDataService {
     public void maintainDaily() {
         //更新数据库status表
         stockDailyStatusService.updateAllStocks();
+        //同步板块
+        stockPlateService.init();
 
+
+    }
+
+    public void initBaseDayKpi(String startDate, String endDate) throws InterruptedException {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(2);
+        executor.setQueueCapacity(2);
+        executor.setKeepAliveSeconds(10000);
+        executor.setThreadNamePrefix("log-operate-thread");
+        // rejection-policy：当pool已经达到max size的时候，如何处理新任务
+        // CALLER_RUNS：不在新线程中执行任务，而是由调用者所在的线程来执行
+        //executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
+        executor.initialize();
+
+        for (int i = 1; i <= 4; i++) {
+            int finalI = i;
+            executor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    List<StockAll> result = stockAllService.selectBatch50(50, finalI);
+//                    System.out.println("===="+result.size());
+//                    result.stream().map(StockAll::getStockCode).forEach(System.out::println);
+                    Set<String> stocks = result.stream().map(StockAll::getStockCode).collect(Collectors.toSet());
+                    if(finalI==2){
+                        System.out.println(stocks.size());
+                        System.out.println("====thread2====");
+                    }
+                    result.forEach(new Consumer<StockAll>() {
+                        @Override
+                        public void accept(StockAll stock) {
+                            stocks.remove(stock.getStockCode());
+                            stockKpiDayService.doImport(startDate,endDate,stock.getStockCode());
+                        }
+                    });
+                    System.out.println("============sets left begin===============");
+                    stocks.stream().forEach(System.out::println);
+                    System.out.println("============sets left end===============");
+
+
+                    System.out.println("success");
+                }
+            });
+        }
+//        for (int i = 1; i <= 4; i++) {
+//            //查询所有stock 50一批
+//            List<StockAll> result = stockAllService.selectBatch50(50, i);
+//            //根据stock_code 维护daily kpi
+//            result.forEach(new Consumer<StockAll>() {
+//                @Override
+//                public void accept(StockAll stock) {
+//                    stockKpiDayService.doImport(startDate,endDate,stock.getStockCode());
+//                }
+//            });
+//        }
+        System.out.println("success");
+        Thread.currentThread().join();              //如果不join 主线程技术了 子线程就丢失了
+    }
+
+
+    public Integer test3(String startDate,String endDate,int i){
+        List<StockAll> result = stockAllService.selectBatch50(50, i);
+        result.forEach(new Consumer<StockAll>() {
+            @Override
+            public void accept(StockAll stock) {
+                stockKpiDayService.doImport(startDate,endDate,stock.getStockCode());
+            }
+        });
+        return 1;
+    }
+
+
+    public void initBaseDayKpi2(String startDate, String endDate) throws InterruptedException {
+//        test3(startDate,endDate,1);
+//        test3(startDate,endDate,2);
+//        test3(startDate,endDate,3);
+//        test3(startDate,endDate,4);
+        List<CompletableFuture<Integer>> threads = new ArrayList<>();
+        CompletableFuture<Integer> thread1 = CompletableFuture.supplyAsync(() -> test3(startDate,endDate,1), baseStockExecutor);
+        CompletableFuture<Integer> thread2 = CompletableFuture.supplyAsync(() -> test3(startDate,endDate,2), baseStockExecutor);
+        CompletableFuture<Integer> thread3 = CompletableFuture.supplyAsync(() -> test3(startDate,endDate,3), baseStockExecutor);
+        CompletableFuture<Integer> thread4 = CompletableFuture.supplyAsync(() -> test3(startDate,endDate,4), baseStockExecutor);
+        CompletableFuture.allOf(threads.toArray(new CompletableFuture<?>[4]));
+        CompletableFuture.allOf(thread1,thread2,thread3,thread4).join();
+    }
+
+    public void initBaseDayKpi3(String startDate, String endDate,Integer taskNum) throws InterruptedException {
+
+        List<CompletableFuture<Integer>> threads = new ArrayList<>();
+        CompletableFuture<Integer> thread1 = CompletableFuture.supplyAsync(() -> test3(startDate,endDate,4* (taskNum-1) + 1), baseStockExecutor);
+        CompletableFuture<Integer> thread2 = CompletableFuture.supplyAsync(() -> test3(startDate,endDate,4* (taskNum-1) + 2), baseStockExecutor);
+        CompletableFuture<Integer> thread3 = CompletableFuture.supplyAsync(() -> test3(startDate,endDate,4* (taskNum-1) + 3), baseStockExecutor);
+        CompletableFuture<Integer> thread4 = CompletableFuture.supplyAsync(() -> test3(startDate,endDate,4* (taskNum-1) + 4), baseStockExecutor);
+        threads.add(thread1);
+        threads.add(thread2);
+        threads.add(thread3);
+        threads.add(thread4);
+        CompletableFuture.allOf(threads.toArray(new CompletableFuture<?>[4])).join();
+//        CompletableFuture.allOf(thread1,thread2,thread3,thread4).join();
     }
 
     public void maintainMonthly(){
