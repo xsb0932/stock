@@ -30,8 +30,8 @@ public class StockRMQBaseHistoryListener {
     FetchDataService fetchDataService;
     @Autowired
     RedisUtils redisUtils;
-    @Value("${domain.id}")
-    private String domainId;
+//    @Value("${domain.id}")
+//    private String domainId;
 
     private static String localIp = null;
     static
