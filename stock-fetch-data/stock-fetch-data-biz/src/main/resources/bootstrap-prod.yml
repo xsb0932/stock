@@ -7,7 +7,6 @@ spring:
       discovery:
         namespace: 9b12d729-3929-4bdb-9f0e-99be5065b8ed
         group: DEFAULT_GROUP
-        ip: 192.168.1.103
       config:
         server-addr: 192.168.0.104:8848
         namespace: 9b12d729-3929-4bdb-9f0e-99be5065b8ed
