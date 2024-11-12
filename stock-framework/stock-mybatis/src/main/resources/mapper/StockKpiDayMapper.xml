@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cemp.mapper.StockKpiDayMapper">
+
+    <resultMap id="BaseResultMap" type="cemp.entity.StockKpiDay">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="stockCode" column="stock_code" jdbcType="VARCHAR"/>
+            <result property="stockName" column="stock_name" jdbcType="VARCHAR"/>
+            <result property="priceBegin" column="price_begin" jdbcType="DECIMAL"/>
+            <result property="priceEnd" column="price_end" jdbcType="DECIMAL"/>
+            <result property="priceMax" column="price_max" jdbcType="DECIMAL"/>
+            <result property="priceMin" column="price_min" jdbcType="DECIMAL"/>
+            <result property="priceIncrease" column="price_increase" jdbcType="DECIMAL"/>
+            <result property="priceIncreaseRate" column="price_increase_rate" jdbcType="DECIMAL"/>
+            <result property="per" column="per" jdbcType="DECIMAL"/>
+            <result property="pbr" column="pbr" jdbcType="DECIMAL"/>
+            <result property="mfInputQuantity" column="mf_input_quantity" jdbcType="DECIMAL"/>
+            <result property="mfInputRate" column="mf_input_rate" jdbcType="DECIMAL"/>
+            <result property="bcInputQuantity" column="bc_input_quantity" jdbcType="DECIMAL"/>
+            <result property="bcInputRate" column="bc_input_rate" jdbcType="DECIMAL"/>
+            <result property="sbcInputQuantity" column="sbc_input_quantity" jdbcType="DECIMAL"/>
+            <result property="sbcInputRate" column="sbc_input_rate" jdbcType="DECIMAL"/>
+            <result property="mcInputQuantity" column="mc_input_quantity" jdbcType="DECIMAL"/>
+            <result property="mcInputRate" column="mc_input_rate" jdbcType="VARCHAR"/>
+            <result property="scInputQuantity" column="sc_input_quantity" jdbcType="VARCHAR"/>
+            <result property="scInputRate" column="sc_input_rate" jdbcType="VARCHAR"/>
+            <result property="staDate" column="sta_date" jdbcType="DATE"/>
+            <result property="turnoverRatio" column="turnover_ratio" jdbcType="DECIMAL"/>
+            <result property="amount" column="amount" jdbcType="DECIMAL"/>
+            <result property="totalCapital" column="total_capital" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,stock_code,stock_name,
+        price_begin,price_end,price_max,
+        price_min,price_increase,price_increase_rate,
+        per,pbr,mf_input_quantity,
+        mf_input_rate,bc_input_quantity,bc_input_rate,
+        sbc_input_quantity,sbc_input_rate,mc_input_quantity,
+        mc_input_rate,sc_input_quantity,sc_input_rate,
+        sta_date,turnover_ratio,amount,
+        total_capital
+    </sql>
+</mapper>

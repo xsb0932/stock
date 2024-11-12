@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cemp.mapper.StockAllMapper">
+
+    <resultMap id="BaseResultMap" type="cemp.entity.StockAll">
+            <id property="id" column="id" jdbcType="INTEGER"/>
+            <result property="stockCode" column="stock_code" jdbcType="VARCHAR"/>
+            <result property="gl" column="gl" jdbcType="VARCHAR"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="jys" column="jys" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,stock_code,gl,
+        name,jys
+    </sql>
+</mapper>
