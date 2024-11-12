@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -45,7 +46,10 @@ public class StockKpiDayServiceImpl extends ServiceImpl<StockKpiDayMapper, Stock
 
     @Override
     public void doImport(String beginDate, String endDate, String stockCode) {
-        RestTemplate restTemplate = new RestTemplate();
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(3000); // 设置连接超时时间（毫秒）
+        factory.setReadTimeout(3000);    // 设置读取超时时间（毫秒）
+        RestTemplate restTemplate = new RestTemplate(factory);
         //删除原始数据
         this.clearByStockCode(beginDate,endDate,stockCode);
         //rest query
