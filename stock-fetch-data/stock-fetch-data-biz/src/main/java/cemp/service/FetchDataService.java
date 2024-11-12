@@ -115,12 +115,12 @@ public class FetchDataService {
     }
 
     private Integer getTaskNum(){
-        String taskNum = redisUtils.get("stock_base_history_task").toString();
+        Object taskNum = redisUtils.get("stock_base_history_task");
         if(taskNum == null){
             redisUtils.set("stock_base_history_task",1,120);
             return 1;
         }else{
-            return Integer.valueOf(taskNum);
+            return Integer.valueOf(taskNum.toString());
         }
 
     }
