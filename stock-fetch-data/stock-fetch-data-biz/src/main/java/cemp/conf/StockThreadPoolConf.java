@@ -29,9 +29,9 @@ public class StockThreadPoolConf {
     @Bean
     public ThreadPoolTaskExecutor baseStockExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5);
-        executor.setMaxPoolSize(10);
-        executor.setQueueCapacity(5);
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(2);
+        executor.setQueueCapacity(10);
         executor.setKeepAliveSeconds(100);
         executor.setThreadNamePrefix("web-kanban-thread");
 
