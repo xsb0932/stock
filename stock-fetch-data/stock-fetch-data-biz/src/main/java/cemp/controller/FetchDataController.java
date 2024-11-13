@@ -73,6 +73,17 @@ public class FetchDataController {
         return "success";
     }
 
+    @GetMapping("/base/test/history1")
+    public String baseTestHistory1() {
+        fetchDataService.baseTestHistory1();
+        return "success";
+    }
+    @GetMapping("/base/test/history2")
+    public String baseTestHistory2() {
+        fetchDataService.baseTestHistory2();
+        return "success";
+    }
+
     @GetMapping("/monthly")
     public String monthly() {
         fetchDataService.maintainMonthly();

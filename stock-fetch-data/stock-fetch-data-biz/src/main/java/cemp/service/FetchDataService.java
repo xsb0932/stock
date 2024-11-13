@@ -3,10 +3,7 @@ package cemp.service;
 import cemp.common.dto.StockCurrentSendDto;
 import cemp.conf.StockMailSender;
 import cemp.config.InfluxDBUtils;
-import cemp.domain.response.ApiAllStockDetails;
-import cemp.domain.response.ApiAllStockResponse;
-import cemp.domain.response.ApiCurrentDetails;
-import cemp.domain.response.ApiCurrentResponse;
+import cemp.domain.response.*;
 import cemp.entity.BusStaDate;
 import cemp.entity.StockAll;
 import cemp.entity.StockDailyStatus;
@@ -16,6 +13,7 @@ import cemp.mapper.StockDailyStatusMapper;
 import cemp.redis.util.RedisUtils;
 import cemp.util.DateUtil;
 import cemp.util.DateUtils;
+import cemp.util.StockHttpUtil;
 import cemp.util.StockUtils;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.map.MapUtil;
@@ -37,6 +35,10 @@ import org.influxdb.dto.QueryResult;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -214,6 +216,34 @@ public class FetchDataService {
         String sql = "select * from test_stock  where time > '2024-08-09T06:00:00Z' and time < '2024-08-10T07:00:00Z'";
         QueryResult result = influxDBUtils.query(sql);
         return null;
+    }
+
+    public String baseTestHistory1(){
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(3000); // 设置连接超时时间（毫秒）
+        factory.setReadTimeout(3000);    // 设置读取超时时间（毫秒）
+        RestTemplate restTemplate = new RestTemplate(factory);
+        System.out.println("test begin");
+        ResponseEntity<ApiCommonResponse<ApiBaseDayResponse>> response = StockHttpUtil.doGet(restTemplate,
+                String.format("%s%s?token=%s&code=%s&endDate=%s&startDate=%s&calculationCycle=100",STOCK_HOST,STOCK_URL_BASE_DAY,STOCK_TOKEN,"002648","2024-11-10","2024-11-01"),
+                HttpMethod.GET,
+                new ParameterizedTypeReference<ApiCommonResponse<ApiBaseDayResponse>>() {}
+        );
+        System.out.println("test end");
+        return "success";
+    }
+
+    public String baseTestHistory2(){
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        RestTemplate restTemplate = new RestTemplate(factory);
+        System.out.println("test begin");
+        ResponseEntity<ApiCommonResponse<ApiBaseDayResponse>> response = StockHttpUtil.doGet(restTemplate,
+                String.format("%s%s?token=%s&code=%s&endDate=%s&startDate=%s&calculationCycle=100",STOCK_HOST,STOCK_URL_BASE_DAY,STOCK_TOKEN,"002648","2024-11-10","2024-11-01"),
+                HttpMethod.GET,
+                new ParameterizedTypeReference<ApiCommonResponse<ApiBaseDayResponse>>() {}
+        );
+        System.out.println("test end");
+        return "success";
     }
 
     /**
