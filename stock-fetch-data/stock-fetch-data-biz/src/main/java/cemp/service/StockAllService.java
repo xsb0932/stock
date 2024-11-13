@@ -16,4 +16,6 @@ public interface StockAllService extends IService<StockAll> {
     List<StockAll> selectBatch50(int pageSize, int pageNum);
 
     Integer totalBatchNum();
+
+    List<String> totalStocks();
 }

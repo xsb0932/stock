@@ -137,6 +137,39 @@ public class FetchDataService {
 
     }
 
+
+    public void sendBaseHistoryOneByOne(String startDate,String endDate){
+        //查询所有股票
+        List<String> allStocks = stockAllService.totalStocks();
+        allStocks.forEach(new Consumer<String>() {
+            @Override
+            public void accept(String stock) {
+                sendBaseHistoryOneStock(startDate,endDate,stock);
+            }
+        });
+    }
+
+    public void sendBaseHistoryOneStock(String startDate,String endDate,String stockCode){
+        String messageId = String.valueOf(UUID.randomUUID());
+        String messageData = "发送rmq任务";
+        String createTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        Map<String, Object> manMap = new HashMap<>();
+        manMap.put("messageId", messageId);
+        manMap.put("messageData", messageData);
+        manMap.put("createTime", createTime);
+        manMap.put("startDate",startDate);
+        manMap.put("endDate",endDate);
+        manMap.put("stockCode",stockCode);
+        /**
+         * exchange 发送消息指定交换机
+         * routingkey 指定topic routingkey 消息会根据rk 跑去绑定的 queue
+         * Object 消息本身
+         */
+        rabbitTemplate.convertAndSend("baseStockHistoryExchange", "rmq_key_base_history", manMap);
+        //redisUtils.incr("stock_base_history_task",1);
+        System.out.println("success");
+    }
+
     public void sendBaseHistoryTask(String startDate,String endDate){
         Integer taskNum = this.getTaskNum();
         String messageId = String.valueOf(UUID.randomUUID());
@@ -734,17 +767,18 @@ public class FetchDataService {
         CompletableFuture.allOf(thread1,thread2,thread3,thread4).join();
     }
 
+
     public void initBaseDayKpi3(String startDate, String endDate,Integer taskNum) throws InterruptedException {
 
         List<CompletableFuture<Integer>> threads = new ArrayList<>();
         CompletableFuture<Integer> thread1 = CompletableFuture.supplyAsync(() -> test3(startDate,endDate,4* (taskNum-1) + 1), baseStockExecutor);
-        CompletableFuture<Integer> thread2 = CompletableFuture.supplyAsync(() -> test3(startDate,endDate,4* (taskNum-1) + 2), baseStockExecutor);
-        CompletableFuture<Integer> thread3 = CompletableFuture.supplyAsync(() -> test3(startDate,endDate,4* (taskNum-1) + 3), baseStockExecutor);
-        CompletableFuture<Integer> thread4 = CompletableFuture.supplyAsync(() -> test3(startDate,endDate,4* (taskNum-1) + 4), baseStockExecutor);
+//        CompletableFuture<Integer> thread2 = CompletableFuture.supplyAsync(() -> test3(startDate,endDate,4* (taskNum-1) + 2), baseStockExecutor);
+//        CompletableFuture<Integer> thread3 = CompletableFuture.supplyAsync(() -> test3(startDate,endDate,4* (taskNum-1) + 3), baseStockExecutor);
+//        CompletableFuture<Integer> thread4 = CompletableFuture.supplyAsync(() -> test3(startDate,endDate,4* (taskNum-1) + 4), baseStockExecutor);
         threads.add(thread1);
-        threads.add(thread2);
-        threads.add(thread3);
-        threads.add(thread4);
+//        threads.add(thread2);
+//        threads.add(thread3);
+//        threads.add(thread4);
         CompletableFuture.allOf(threads.toArray(new CompletableFuture<?>[4])).join();
 //        CompletableFuture.allOf(thread1,thread2,thread3,thread4).join();
     }

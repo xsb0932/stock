@@ -53,10 +53,17 @@ public class FetchDataController {
         return "success";
     }
 
-    @GetMapping("/base/history")
-    public String baseHistory(@RequestParam("startDate") String startDate,
+    @GetMapping("/base/history/batch")
+    public String baseHistoryBatch(@RequestParam("startDate") String startDate,
                               @RequestParam("endDate") String endDate) {
         fetchDataService.sendBaseHistoryBatch(startDate,endDate);
+        return "success";
+    }
+
+    @GetMapping("/base/history/stocks")
+    public String baseHistoryOneByOne(@RequestParam("startDate") String startDate,
+                              @RequestParam("endDate") String endDate) {
+        fetchDataService.sendBaseHistoryOneByOne(startDate,endDate);
         return "success";
     }
 

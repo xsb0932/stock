@@ -47,8 +47,8 @@ public class StockKpiDayServiceImpl extends ServiceImpl<StockKpiDayMapper, Stock
     @Override
     public void doImport(String beginDate, String endDate, String stockCode) {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(3000); // 设置连接超时时间（毫秒）
-        factory.setReadTimeout(3000);    // 设置读取超时时间（毫秒）
+        factory.setConnectTimeout(100); // 设置连接超时时间（毫秒）
+        factory.setReadTimeout(100);    // 设置读取超时时间（毫秒）
         RestTemplate restTemplate = new RestTemplate(factory);
         //删除原始数据
         this.clearByStockCode(beginDate,endDate,stockCode);

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 
-@Component
+//@Component
 @Slf4j
 public class ScheduleTask {
 

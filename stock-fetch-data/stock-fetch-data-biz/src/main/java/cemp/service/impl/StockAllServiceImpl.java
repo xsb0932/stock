@@ -70,6 +70,12 @@ public class StockAllServiceImpl extends ServiceImpl<StockAllMapper, StockAll>
         return NumberUtil.div(new BigDecimal(totalNum), new BigDecimal(200),0, RoundingMode.FLOOR).intValue();
     }
 
+    @Override
+    public List<String> totalStocks() {
+        List<StockAll> all = this.getBaseMapper().selectList(new LambdaQueryWrapper<>());
+        return all.stream().map(StockAll::getStockCode).collect(Collectors.toList());
+    }
+
     public static void main(String[] args) {
         Long totalNum = (520333L);
         System.out.println(NumberUtil.div(new BigDecimal(totalNum), new BigDecimal(200),0, RoundingMode.CEILING));
